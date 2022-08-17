@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Collections;
 using System.Linq;
 using System;
+using System.Reflection;
+using UnityEditor;
 
 namespace EasyDebug
 {
@@ -38,16 +40,19 @@ namespace EasyDebug
         public Entity Parse(string separator = null)
         {
             value = QDebug.defaultParser(objects, separator != null ? separator : QDebug.defaultSeparator);
+            value = QDebug.formatFunction(this);
             return this;
         }
         public Entity Parse(Func<object[], string, string> parser, string separator = null)
         {
             value = parser(objects, separator != null ? separator : QDebug.defaultSeparator);
+            value = QDebug.formatFunction(this);
             return this;
         }
         public Entity Parse(Parser parser, string separator = null)
         {
             value = QDebug.FindParser(parser)(objects, separator != null ? separator : QDebug.defaultSeparator);
+            value = QDebug.formatFunction(this);
             return this;
         }
 
@@ -71,6 +76,14 @@ namespace EasyDebug
         public static string defaultSeparator = " ";
 
         public static Tag tagsAllowed = Tag.Info | Tag.Warning | Tag.Error | Tag.Debug;
+
+        public static string format = "${message}";
+        public static Func<Entity, string> formatFunction = Format;
+
+        public static string Format(Entity entity)
+        {
+            return format.Replace("${message}", entity.value);
+        }
 
         /// <summary>
         /// Input values ; separator ; output string
@@ -111,9 +124,12 @@ namespace EasyDebug
             customCulture.NumberFormat.NumberDecimalSeparator = divider;
             System.Threading.Thread.CurrentThread.CurrentCulture = customCulture;
         }
-        public static void Clear()
+        public static void ClearConsole()
         {
-            Debug.ClearDeveloperConsole();
+            var assembly = Assembly.GetAssembly(typeof(SceneView));
+            var type = assembly.GetType("UnityEditor.LogEntries");
+            var method = type.GetMethod("Clear");
+            method.Invoke(new object(), null);
         }
     }
     

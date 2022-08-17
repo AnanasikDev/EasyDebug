@@ -18,6 +18,17 @@ public class MainExample : MonoBehaviour
         QDebug.Dommit("hallo", 123, 1.0234, new A());
 
         QDebug.Commit(123, 1.0, new System.Collections.Generic.List<int>() { 1, 12, 32 }).Parse().Do();
+
+        QDebug.formatFunction = CustomFormat;
+
+        QDebug.ClearConsole();
+
+        QDebug.Dommit("Hello world!");
+    }
+
+    private string CustomFormat(Entity entity)
+    {
+        return $"[{System.DateTime.Now}][{entity.tag}] : {entity.value}";
     }
 }
 
