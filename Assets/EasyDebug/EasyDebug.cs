@@ -13,6 +13,7 @@ namespace EasyDebug
         public string value;
         private object[] objects;
         public Tag tag = EasyDebug.Tag.Info;
+
         public Action<string> logFunction
         {
             get
@@ -69,6 +70,12 @@ namespace EasyDebug
             logFunction(value);
             return true;
         }
+
+        public Entity Color(string color)
+        {
+            value = $"<color={color}>{value}</color>";
+            return this;
+        }
     }
     public static class QDebug
     {
@@ -77,12 +84,11 @@ namespace EasyDebug
 
         public static Tag tagsAllowed = Tag.Info | Tag.Warning | Tag.Error | Tag.Debug;
 
-        public static string format = "${message}";
         public static Func<Entity, string> formatFunction = Format;
 
         public static string Format(Entity entity)
         {
-            return format.Replace("${message}", entity.value);
+            return entity.value;
         }
 
         /// <summary>
@@ -154,6 +160,10 @@ public static class Extensions
     {
         foreach (var obj in ienumerable)
             yield return obj.ToString();
+    }
+    public static string Color(this string target, string color)
+    {
+        return $"<color={color}>{target}</color>";
     }
 }
 

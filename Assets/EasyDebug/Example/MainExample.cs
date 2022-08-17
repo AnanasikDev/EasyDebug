@@ -6,7 +6,7 @@ public class MainExample : MonoBehaviour
     private void Start()
     {
         QDebug.SetFloatDivider();
-        //QDebug.tagsAllowed = Tag.Debug | Tag.Info;
+        QDebug.tagsAllowed = Tag.Debug | Tag.Info;
         QDebug.defaultParser = QDebug.DeepParse;
         
         QDebug.Commit("Hello", "World").Parse(" ").Tag(Tag.Debug).Do();
@@ -23,7 +23,8 @@ public class MainExample : MonoBehaviour
 
         QDebug.ClearConsole();
 
-        QDebug.Dommit("Hello world!");
+        QDebug.Dommit("Hello world!".Color("#CCFF01"));
+        QDebug.Commit("Bye world!").Tag(Tag.Error).Parse().Color("#FFCC10").Do();
     }
 
     private string CustomFormat(Entity entity)
