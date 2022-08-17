@@ -25,6 +25,17 @@ namespace EasyDebug
             value = EDebug.ParseFunction(objects, separator != null ? separator : EDebug.defaultSeparator);
             return this;
         }
+        public Entity Parse(Func<object[], string, string> parser, string separator = null)
+        {
+            value = parser(objects, separator != null ? separator : EDebug.defaultSeparator);
+            return this;
+        }
+        public Entity Parse(Parser parser, string separator = null)
+        {
+            value = EDebug.FindParser(parser)(objects, separator != null ? separator : EDebug.defaultSeparator);
+            return this;
+        }
+
         public void Do()
         {
             UnityEngine.Debug.Log(value);
@@ -38,9 +49,19 @@ namespace EasyDebug
         /// <summary>
         /// Input values ; separator ; output string
         /// </summary>
-        public static Func<object[], string, string> ParseFunction = SoftParse;
+        public static Func<object[], string, string> ParseFunction = HarshParse;
 
-        public static string SoftParse(object[] objects, string separator = null)
+        public static Func<object[], string, string> FindParser(Parser parser)
+        {
+            switch (parser)
+            {
+                case Parser.Harsh: return HarshParse;
+                case Parser.Deep:  return DeepParse;
+            }
+            return null;
+        }
+
+        public static string HarshParse(object[] objects, string separator = null)
         {
             return string.Join(separator != null ? separator : EDebug.defaultSeparator, objects);
         }
@@ -53,8 +74,24 @@ namespace EasyDebug
         {
             return new Entity(values);
         }
-    }
+        public static void Dommit(params object[] values)
+        {
+            new Entity(values).Parse().Do();
+        }
 
+        public static void SetFloatDivider(string divider = ".")
+        {
+            System.Globalization.CultureInfo customCulture = (System.Globalization.CultureInfo)System.Threading.Thread.CurrentThread.CurrentCulture.Clone();
+            customCulture.NumberFormat.NumberDecimalSeparator = divider;
+            System.Threading.Thread.CurrentThread.CurrentCulture = customCulture;
+        }
+    }
+    
+    public enum Parser
+    {
+        Harsh,
+        Deep
+    }
 }
 
 public static class Extensions
