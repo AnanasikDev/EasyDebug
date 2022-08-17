@@ -10,6 +10,21 @@ namespace EasyDebug
     {
         public string value;
         private object[] objects;
+        public Tag tag = EasyDebug.Tag.Info;
+        public Action<string> logFunction
+        {
+            get
+            {
+                switch (tag)
+                {
+                    case EasyDebug.Tag.Info:    return UnityEngine.Debug.Log;
+                    case EasyDebug.Tag.Debug:   return UnityEngine.Debug.Log;
+                    case EasyDebug.Tag.Warning: return UnityEngine.Debug.LogWarning;
+                    case EasyDebug.Tag.Error:   return UnityEngine.Debug.LogError;
+                }
+                return null;
+            }
+        }
 
         public Entity(object[] _objects)
         {
@@ -22,52 +37,63 @@ namespace EasyDebug
 
         public Entity Parse(string separator = null)
         {
-            value = EDebug.ParseFunction(objects, separator != null ? separator : EDebug.defaultSeparator);
+            value = QDebug.defaultParser(objects, separator != null ? separator : QDebug.defaultSeparator);
             return this;
         }
         public Entity Parse(Func<object[], string, string> parser, string separator = null)
         {
-            value = parser(objects, separator != null ? separator : EDebug.defaultSeparator);
+            value = parser(objects, separator != null ? separator : QDebug.defaultSeparator);
             return this;
         }
         public Entity Parse(Parser parser, string separator = null)
         {
-            value = EDebug.FindParser(parser)(objects, separator != null ? separator : EDebug.defaultSeparator);
+            value = QDebug.FindParser(parser)(objects, separator != null ? separator : QDebug.defaultSeparator);
             return this;
         }
 
-        public void Do()
+        public Entity Tag(Tag tag)
         {
-            UnityEngine.Debug.Log(value);
+            this.tag = tag;
+            return this;
+        }
+
+        public bool Do()
+        {
+            if (!QDebug.tagsAllowed.HasFlag(tag)) return false;
+            
+            logFunction(value);
+            return true;
         }
     }
-    public static class EDebug
+    public static class QDebug
     {
         public static bool serialize = true;
         public static string defaultSeparator = " ";
 
+        public static Tag tagsAllowed = Tag.Info | Tag.Warning | Tag.Error | Tag.Debug;
+
         /// <summary>
         /// Input values ; separator ; output string
         /// </summary>
-        public static Func<object[], string, string> ParseFunction = HarshParse;
+        public static Func<object[], string, string> defaultParser = HarshParse;
 
         public static Func<object[], string, string> FindParser(Parser parser)
         {
             switch (parser)
             {
                 case Parser.Harsh: return HarshParse;
-                case Parser.Deep:  return DeepParse;
+                case Parser.Deep: return DeepParse;
             }
             return null;
         }
 
         public static string HarshParse(object[] objects, string separator = null)
         {
-            return string.Join(separator != null ? separator : EDebug.defaultSeparator, objects);
+            return string.Join(separator != null ? separator : QDebug.defaultSeparator, objects);
         }
         public static string DeepParse(object[] objects, string separator = null)
         {
-            return string.Join(separator != null ? separator : EDebug.defaultSeparator, objects.Select(x => x is IEnumerable i && !(x is string) ? string.Join(separator, i.CastToStrings()) : x.ToString()));
+            return string.Join(separator != null ? separator : QDebug.defaultSeparator, objects.Select(x => x is IEnumerable i && !(x is string) ? string.Join(separator, i.CastToStrings()) : x.ToString()));
         }
 
         public static Entity Commit(params object[] values)
@@ -85,12 +111,24 @@ namespace EasyDebug
             customCulture.NumberFormat.NumberDecimalSeparator = divider;
             System.Threading.Thread.CurrentThread.CurrentCulture = customCulture;
         }
+        public static void Clear()
+        {
+            Debug.ClearDeveloperConsole();
+        }
     }
     
     public enum Parser
     {
         Harsh,
         Deep
+    }
+
+    public enum Tag
+    {
+        Info = 1,
+        Warning = 2,
+        Error = 4,
+        Debug = 8
     }
 }
 
