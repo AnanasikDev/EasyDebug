@@ -33,18 +33,38 @@ namespace EasyDebug
             this.objects = _objects;
         }
 
+        /// <summary>
+        /// Parses 'objects' into 'value' with 'QDebug.defaultParser'
+        /// and then applies format to it.
+        /// </summary>
+        /// <param name="separator">Optional custom separator</param>
+        /// <returns>Returns this</returns>
         public Entity Parse(string separator = null)
         {
             value = QDebug.defaultParser(objects, separator != null ? separator : QDebug.defaultSeparator);
             value = QDebug.formatFunction(this);
             return this;
         }
+        /// <summary>
+        /// Parses 'objects' into 'value' with 'l:parser'
+        /// and then applies format to it.
+        /// </summary>
+        /// <param name="parser">Custom parsing function</param>
+        /// <param name="separator">Optional custom separator</param>
+        /// <returns>Returns this</returns>
         public Entity Parse(Func<object[], string, string> parser, string separator = null)
         {
             value = parser(objects, separator != null ? separator : QDebug.defaultSeparator);
             value = QDebug.formatFunction(this);
             return this;
         }
+        /// <summary>
+        /// Parses 'objects' into 'value' with 'l:parser'
+        /// and then applies format to it.
+        /// </summary>
+        /// <param name="parser">Custom parsing function type</param>
+        /// <param name="separator">Optional custom separator</param>
+        /// <returns>Returns this</returns>
         public Entity Parse(Parser parser, string separator = null)
         {
             value = QDebug.FindParser(parser)(objects, separator != null ? separator : QDebug.defaultSeparator);
@@ -52,18 +72,37 @@ namespace EasyDebug
             return this;
         }
 
+        /// <summary>
+        /// Applies a tag on the Entity.
+        /// </summary>
+        /// <param name="tag">Tag to apply</param>
+        /// <returns>Returns this</returns>
         public Entity Tag(Dag tag)
         {
             this.tag = tag;
             return this;
         }
 
+        /// <summary>
+        /// Actually prints value in Unity console.
+        /// Doesn't print if tag is not allowed.
+        /// </summary>
+        /// <returns>Returns true if printed successfully; otherwise false</returns>
         public bool Do(UnityEngine.Object target = null)
         {
             if (!QDebug.tagsAllowed.HasFlag(tag)) return false;
 
             logFunction(value, target);
             return true;
+        }
+
+        public static bool operator ==(Entity a, Entity b)
+        {
+            return a.value == b.value && a.tag == b.tag;
+        }
+        public static bool operator !=(Entity a, Entity b)
+        {
+            return !(a == b);
         }
     }
 }
@@ -137,9 +176,20 @@ public static class QDebug
         }
         return null;
     }
+
+    /// <summary>
+    /// Sets the parser function to the FindParser(parser)
+    /// </summary>
     public static void SetParser(Parser parser)
     {
         defaultParser = FindParser(parser);
+    }
+    /// <summary>
+    /// Sets the parser function to the parser
+    /// </summary>
+    public static void SetParser(Func<object[], string, string> parser)
+    {
+        defaultParser = parser;
     }
 
     /// <summary>
