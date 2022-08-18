@@ -1,19 +1,18 @@
 ﻿using UnityEngine;
-using EasyDebug;
 
 public class MainExample : MonoBehaviour
 {
     private void Start()
     {
         QDebug.SetFloatDivider();
-        QDebug.tagsAllowed = Tag.Debug | Tag.Info;
+        //QDebug.tagsAllowed = Tag.Debug | Tag.Info;
         QDebug.defaultParser = QDebug.DeepParse;
         
-        QDebug.Commit("Hello", "World").Parse(" ").Tag(Tag.Debug).Do();
-        QDebug.Commit(new int[3] { 1, 2, 3 }, 1, "HAlo").Parse(Parser.Deep, " : ").Tag(Tag.Info).Do();
-        QDebug.Commit(new float[2] { 1.02f, 2.01f }).Parse(Parser.Deep).Tag(Tag.Error).Do();
-
-        QDebug.Commit("WARNs").Parse().Tag(Tag.Warning).Do();
+        QDebug.Commit("Hello", "World").Parse(" ").Tag(Dag.Debug).Do();
+        QDebug.Commit(new int[3] { 1, 2, 3 }, 1, "HAlo").Parse(Parser.Deep, " : ").Tag(Dag.Info).Do();
+        QDebug.Commit(new float[2] { 1.02f, 2.01f }).Parse(Parser.Deep).Tag(Dag.Error).Do();
+        
+        QDebug.Commit("WARNs").Parse().Tag(Dag.Warning).Do();
 
         QDebug.Dommit("hallo", 123, 1.0234, new A());
 
@@ -24,10 +23,13 @@ public class MainExample : MonoBehaviour
         QDebug.ClearConsole();
 
         QDebug.Dommit("Hello world!".Color("#CCFF01"));
-        QDebug.Commit("Bye world!").Tag(Tag.Error).Parse().Color("#FFCC10").Do();
+        QDebug.Commit("Bye world!").Tag(Dag.Error).Parse().Color("#FFCC10").Do(this);
+
+        QDebug.Commit("A".Color("#654321"), "B".Color("#765432"), "C".Color("#876543")).Parse("").Do(gameObject);
+        QDebug.Dommit();
     }
 
-    private string CustomFormat(Entity entity)
+    private string CustomFormat(EasyDebug.Entity entity)
     {
         return $"[{System.DateTime.Now}][{entity.tag}] : {entity.value}";
     }
