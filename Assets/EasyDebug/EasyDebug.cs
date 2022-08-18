@@ -161,12 +161,10 @@ public static class QDebug
     /// </summary>
     /// <param name="objects">objects to combine</param>
     /// <param name="separator">separates parsed objects. Does NOT separate IEnumerables' content.</param>
-    /// <param name="enumsSeparator">separates IEnumerables' content. l:separator by default.</param>
     /// <returns>Single string</returns>
-    public static string DeepParse(object[] objects, string separator = null, string enumsSeparator = null)
+    public static string DeepParse(object[] objects, string separator = null)
     {
-        if (enumsSeparator == null) enumsSeparator = separator;
-        return string.Join(separator != null ? separator : QDebug.defaultSeparator, objects.Select(x => x is IEnumerable i && !(x is string) ? string.Join(enumsSeparator, i.CastToStrings()) : x.ToString()));
+        return string.Join(separator != null ? separator : QDebug.defaultSeparator, objects.Select(x => x is IEnumerable i && !(x is string) ? string.Join(separator, i.CastToStrings()) : x.ToString()));
     }
 
     /// <summary>
