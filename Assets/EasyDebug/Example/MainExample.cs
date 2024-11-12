@@ -1,37 +1,31 @@
 ﻿using UnityEngine;
+using EasyDebug.PipeConsole;
 
 public class MainExample : MonoBehaviour
 {
     private void Start()
     {
-        QDebug.SetFloatDivider();
+        PipeConsole.SetFloatDivider();
         //QDebug.tagsAllowed = Tag.Debug | Tag.Info;
-        QDebug.defaultParser = QDebug.DeepParse;
+        PipeConsole.defaultParser = PipeConsole.DeepParse;
         
-        QDebug.Commit("Hello", "World").Parse(" ").Tag(Dag.Debug).Do();
-        QDebug.Commit(new int[3] { 1, 2, 3 }, 1, "HAlo").Parse(Parser.Deep, " : ").Tag(Dag.Info).Do();
-        QDebug.Commit(new float[2] { 1.02f, 2.01f }).Parse(Parser.Deep).Tag(Dag.Error).Do();
+        PipeConsole.Commit("Hello", "World").Parse(" ").Tag(SeverityTag.Debug).Print();
+        PipeConsole.Commit(new int[3] { 1, 2, 3 }, 1, "HAlo").Parse(Parser.Deep, " : ").Tag(SeverityTag.Info).Print();
+        PipeConsole.Commit(new float[2] { 1.02f, 2.01f }).Parse(Parser.Deep).Tag(SeverityTag.Error).Print();
         
-        QDebug.Commit("WARNs").Parse().Tag(Dag.Warning).Do();
+        PipeConsole.Commit("WARNs").Parse().Tag(SeverityTag.Warning).Print();
 
-        QDebug.Dommit("hallo", 123, 1.0234, new A());
+        PipeConsole.Print("hallo", 123, 1.0234, new A());
 
-        QDebug.Commit(123, 1.0, new System.Collections.Generic.List<int>() { 1, 12, 32 }).Parse().Do();
+        PipeConsole.Commit(123, 1.0, new System.Collections.Generic.List<int>() { 1, 12, 32 }).Parse().Print();
 
-        QDebug.formatFunction = CustomFormat;
+        PipeConsole.ClearConsole();
 
-        QDebug.ClearConsole();
+        PipeConsole.Print("Hello world!".Colorify("#CCFF01"));
+        PipeConsole.Commit("Bye world!").Tag(SeverityTag.Error).Parse().Colorify("#FFCC10").Print(this);
 
-        QDebug.Dommit("Hello world!".Color("#CCFF01"));
-        QDebug.Commit("Bye world!").Tag(Dag.Error).Parse().Color("#FFCC10").Do(this);
-
-        QDebug.Commit("A".Color("#654321"), "B".Color("#765432"), "C".Color("#876543")).Parse("").Do(gameObject);
-        QDebug.Dommit();
-    }
-
-    private string CustomFormat(EasyDebug.Entity entity)
-    {
-        return $"[{System.DateTime.Now}][{entity.tag}] : {entity.value}";
+        PipeConsole.Commit("A".Colorify("#654321"), "B".Colorify("#765432"), "C".Colorify("#876543")).Parse("").Print(gameObject);
+        PipeConsole.Print();
     }
 }
 
