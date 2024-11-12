@@ -1,25 +1,25 @@
 using TMPro;
 using UnityEngine;
 
-namespace EasyDebug.RuntimeConsole
+namespace EasyDebug
 {
-    public class RuntimeConsole : MonoBehaviour
+    public class CommandLine : MonoBehaviour
     {
-        private float height = 50;
+        private float height = 30;
 
         private Canvas canvas;
         private GameObject handler;
-        public static RuntimeConsole instance;
+        public static CommandLine instance;
         public bool isActive { get; private set; } = false;
 
         [SerializeField] private TMP_InputField inputField;
-        RuntimeConsoleEngine engine = new RuntimeConsoleEngine();
+        CommandLineEngine engine = new CommandLineEngine();
 
         public static void Create()
         {
             if (instance == null)
             {
-                RuntimeConsole prefab = Resources.Load<RuntimeConsole>("RuntimeConsole");
+                CommandLine prefab = Resources.Load<CommandLine>("RuntimeConsole");
                 Debug.Log("Resource loaded as " + prefab);
                 instance = Instantiate(prefab);
             }
@@ -30,7 +30,20 @@ namespace EasyDebug.RuntimeConsole
         {
             if (instance != null)
             {
-                DestroyImmediate(instance);
+#if UNITY_EDITOR
+                DestroyImmediate(instance.gameObject);
+#else
+                Destroy(instance.gameObject);
+#endif
+            }
+            var foundInstance = FindFirstObjectByType<CommandLine>();
+            if (foundInstance != null)
+            {
+#if UNITY_EDITOR
+                DestroyImmediate(foundInstance.gameObject);
+#else
+                Destroy(foundInstance.gameObject);
+#endif
             }
         }
 

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Reflection;
 using UnityEngine;
 
-namespace EasyDebug.RuntimeConsole
+namespace EasyDebug
 {
     public enum ConsoleCommandType
     {
@@ -20,20 +20,20 @@ namespace EasyDebug.RuntimeConsole
     }
 
     [AttributeUsage(AttributeTargets.Method)]
-    public class ConsoleCommand : Attribute
+    public class Command : Attribute
     {
         public string name { get; private set; }
         public ConsoleCommandType type { get; private set; }
         // TODO: add custom prefix (i.e. player, time, etc ~ alias)
 
-        public ConsoleCommand(string name, ConsoleCommandType type)
+        public Command(string name, ConsoleCommandType type)
         {
             this.name = name;
             this.type = type;
         }
     }
 
-    public class RuntimeConsoleEngine
+    public class CommandLineEngine
     {
         public BindingFlags access = BindingFlags.Public |
                                      BindingFlags.NonPublic |
@@ -41,23 +41,23 @@ namespace EasyDebug.RuntimeConsole
                                      BindingFlags.Instance;
 
         List<MethodInfo> methods = new List<MethodInfo>();
-        List<ConsoleCommand> commands = new List<ConsoleCommand>();
+        List<Command> commands = new List<Command>();
 
         public void Init()
         {
             methods = Assembly.GetExecutingAssembly()
                 .GetTypes()
                 .SelectMany(t => t.GetMethods(access))
-                .Where(m => m.GetCustomAttributes<ConsoleCommand>().Any())
+                .Where(m => m.GetCustomAttributes<Command>().Any())
                 .ToList();
 
-            commands = methods.SelectMany(m => m.GetCustomAttributes<ConsoleCommand>()).ToList();
+            commands = methods.SelectMany(m => m.GetCustomAttributes<Command>()).ToList();
 
             Debug.Log("Found " + methods.Count + " commands available:");
 
             foreach (var method in methods)
             {
-                var attr = method.GetCustomAttribute<ConsoleCommand>();
+                var attr = method.GetCustomAttribute<Command>();
                 Debug.Log("Found command: " + method.Name + " with return type = " + method.ReturnType + "; Attribute name is " + attr.name + " of length = " + attr.name.Length);
             }
         }
@@ -89,6 +89,12 @@ namespace EasyDebug.RuntimeConsole
 
         public void Execute(string query)
         {
+            if (query == string.Empty) return;
+            if (query.Contains('.') == false)
+            {
+                Debug.LogWarning($"Runtime console could not execute command ({query}) as it has no '.' sign in it");
+            }
+
             string objectName = query.Split('.')[0];
             //Debug.Log("EXECUTE: objectName = " + objectName + " of length = " + objectName.Length);
 
@@ -102,11 +108,11 @@ namespace EasyDebug.RuntimeConsole
                 return;
             }
 
-            int index = commands.FindIndex(0, (ConsoleCommand c) => c.name == commandName);
+            int index = commands.FindIndex(0, (Command c) => c.name == commandName);
             
             if (index == -1)
             {
-                Debug.LogError(string.Format("Command with name {0} could not be found", commandName));
+                Debug.LogError($"Command with name {commandName} could not be found");
                 return;
             }
             
@@ -118,13 +124,13 @@ namespace EasyDebug.RuntimeConsole
             GameObject obj = GameObject.Find(objectName);
             if (obj == null)
             {
-                Debug.LogError(string.Format("Object with name {0} not found on the current scene", objectName));
+                Debug.LogError($"Object with name {objectName} not found on the current scene");
             }
 
             TryInvokeMethodOnGameObject(obj, method);
         }
 
-        [ConsoleCommand("EngineFuncHEHE", ConsoleCommandType.ObjectRelative)]
+        [Command("EngineFuncHEHE", ConsoleCommandType.ObjectRelative)]
         public void EngineFunc()
         {
             Debug.Log("Ok this one works noice");

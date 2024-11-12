@@ -1,6 +1,6 @@
 using UnityEngine;
 using UnityEditor;
-using EasyDebug.RuntimeConsole;
+using EasyDebug;
 
 public class EasyDebugWindow : EditorWindow
 {
@@ -15,15 +15,21 @@ public class EasyDebugWindow : EditorWindow
         GUILayout.BeginVertical();
         GUILayout.Label("Easy Debug Window");
         GUILayout.Space(15);
-        GUILayout.Label("Runtime Console");
-        if (GUILayout.Button("Init Runtime Console"))
+        GUILayout.Label("Runtime Command Line");
+        if (GUILayout.Button("Init Command Line"))
         {
-            RuntimeConsole.Create();
+            CommandLine.Create();
         }
-        if (GUILayout.Button("Delete Runtime Console"))
+        if (GUILayout.Button("Delete Command Line"))
         {
-            RuntimeConsole.Delete();
+            CommandLine.Delete();
         }
+
+        if (GUILayout.Button("Clear Unity Console"))
+        {
+            PipeConsole.ClearConsole();
+        }
+
         GUILayout.EndVertical();
     }
 }

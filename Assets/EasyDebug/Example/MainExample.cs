@@ -1,6 +1,5 @@
 ﻿using UnityEngine;
-using EasyDebug.PipeConsole;
-using EasyDebug.RuntimeConsole;
+using EasyDebug;
 
 public class MainExample : MonoBehaviour
 {
@@ -8,7 +7,7 @@ public class MainExample : MonoBehaviour
     {
     }
 
-    [ConsoleCommand("command_uno", ConsoleCommandType.Global)]
+    [Command("command_uno", ConsoleCommandType.Global)]
     public void MyCustomCommand1()
     {
         Debug.Log("Heh that's my first custom runtime console command:D");

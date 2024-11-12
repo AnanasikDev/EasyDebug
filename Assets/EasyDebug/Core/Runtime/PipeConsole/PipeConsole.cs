@@ -5,7 +5,7 @@ using System;
 using System.Reflection;
 using UnityEditor;
 
-namespace EasyDebug.PipeConsole
+namespace EasyDebug
 {
     public class PipeConsoleEntity
     {

@@ -1,9 +1,9 @@
 ﻿using UnityEngine;
-using EasyDebug.RuntimeConsole;
+using EasyDebug;
 
 public class ConsoleCommandTest : MonoBehaviour
 {
-    [ConsoleCommand("testFunc", ConsoleCommandType.ObjectRelative)]
+    [Command("testFunc", ConsoleCommandType.ObjectRelative)]
     private void myTestFunction()
     {
         Debug.Log("myTestFunction has been called on me! " + gameObject.name);
