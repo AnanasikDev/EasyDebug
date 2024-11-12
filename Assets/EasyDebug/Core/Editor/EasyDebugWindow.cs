@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEditor;
+using EasyDebug.RuntimeConsole;
 
 public class EasyDebugWindow : EditorWindow
 {

@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using EasyDebug.PipeConsole;
+using EasyDebug.RuntimeConsole;
 
 public class MainExample : MonoBehaviour
 {
@@ -26,6 +27,12 @@ public class MainExample : MonoBehaviour
 
         PipeConsole.Commit("A".Colorify("#654321"), "B".Colorify("#765432"), "C".Colorify("#876543")).Parse("").Print(gameObject);
         PipeConsole.Print();
+    }
+
+    [ConsoleCommand("command_uno", ConsoleCommandType.Global)]
+    public void MyCustomCommand1()
+    {
+        Debug.Log("Heh that's my first custom runtime console command:D");
     }
 }
 
