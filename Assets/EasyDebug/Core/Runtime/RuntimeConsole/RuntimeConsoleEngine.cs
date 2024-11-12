@@ -24,6 +24,7 @@ namespace EasyDebug.RuntimeConsole
     {
         public string name { get; private set; }
         public ConsoleCommandType type { get; private set; }
+        // TODO: add custom prefix (i.e. player, time, etc ~ alias)
 
         public ConsoleCommand(string name, ConsoleCommandType type)
         {
@@ -61,14 +62,39 @@ namespace EasyDebug.RuntimeConsole
             }
         }
 
+        /// <summary>
+        /// Searches for a component on the GameObject with the specified method and invokes it if found.
+        /// </summary>
+        public void TryInvokeMethodOnGameObject(GameObject gameObject, MethodInfo methodInfo)
+        {
+            // Get the name of the method we are looking for
+            string methodName = methodInfo.Name;
+
+            // Loop through each component attached to the GameObject
+            foreach (var component in gameObject.GetComponents<MonoBehaviour>())
+            {
+                // Check if this component has the specified method
+                var componentMethod = component.GetType().GetMethod(methodName, access);
+                if (componentMethod != null && componentMethod == methodInfo)
+                {
+                    // Invoke the method on the component
+                    componentMethod.Invoke(component, null); // Pass parameters here if required
+                    Debug.Log($"Method '{methodName}' invoked on component '{component.GetType().Name}' attached to '{gameObject.name}'");
+                    return;
+                }
+            }
+
+            Debug.LogWarning($"No component with method '{methodName}' found on GameObject '{gameObject.name}'");
+        }
+
         public void Execute(string query)
         {
             string objectName = query.Split('.')[0];
-            Debug.Log("EXECUTE: objectName = " + objectName + " of length = " + objectName.Length);
+            //Debug.Log("EXECUTE: objectName = " + objectName + " of length = " + objectName.Length);
 
             string commandName = objectName == string.Empty ? query.Split(" ")[0] : query.Split(".")[1].Split(" ")[0];
             commandName = commandName.Replace(".", "").Replace(" ", "");
-            Debug.Log("EXECUTE: commandName = " + commandName + " of length = " + commandName.Length);
+            //Debug.Log("EXECUTE: commandName = " + commandName + " of length = " + commandName.Length);
 
             if (commandName == string.Empty)
             {
@@ -95,7 +121,13 @@ namespace EasyDebug.RuntimeConsole
                 Debug.LogError(string.Format("Object with name {0} not found on the current scene", objectName));
             }
 
-            method.Invoke(obj, null);
+            TryInvokeMethodOnGameObject(obj, method);
+        }
+
+        [ConsoleCommand("EngineFuncHEHE", ConsoleCommandType.ObjectRelative)]
+        public void EngineFunc()
+        {
+            Debug.Log("Ok this one works noice");
         }
     }
 }
