@@ -29,7 +29,6 @@ public class EasyDebugWindow : EditorWindow
         {
             PipeConsole.ClearConsole();
         }
-
         GUILayout.EndVertical();
     }
 }

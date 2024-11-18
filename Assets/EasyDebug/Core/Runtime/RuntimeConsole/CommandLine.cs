@@ -1,3 +1,4 @@
+using System.Linq;
 using TMPro;
 using UnityEngine;
 
@@ -5,15 +6,18 @@ namespace EasyDebug
 {
     public class CommandLine : MonoBehaviour
     {
-        private float height = 30;
+        internal const float height = 30;
 
-        private Canvas canvas;
-        private GameObject handler;
+        internal Canvas canvas;
+        internal GameObject handler;
         public static CommandLine instance;
         public bool isActive { get; private set; } = false;
 
         [SerializeField] private TMP_InputField inputField;
-        CommandLineEngine engine = new CommandLineEngine();
+        [SerializeField] private TMP_Dropdown suggestionsDropdown;
+
+        protected CommandLineEngine engine = new CommandLineEngine();
+        protected CommandLineSuggestions suggestions = new CommandLineSuggestions();
 
         public static void Create()
         {
@@ -73,6 +77,14 @@ namespace EasyDebug
             {
                 Toggle();
             }
+
+            suggestions.UpdateDropdownOptions(suggestionsDropdown, engine.GetCommandsStartingWith(engine.ParseInput(inputField.text).functionName).Select(c => c.name).ToList());
+            inputField.Select();
+
+            /*if (isActive)
+            {
+                suggestions.UpdateDropdownOptions(suggestionsDropdown, engine.GetCommandsStartingWith(engine.ParseInput(inputField.text).functionName).Select(c => c.name).ToList());
+            }*/
         }
 
         public void Submit()
@@ -95,12 +107,14 @@ namespace EasyDebug
 
         public void Show()
         {
+            isActive = true;
             gameObject.SetActive(true);
             inputField.Select();
         }
 
         public void Hide()
         {
+            isActive = false;
             gameObject.SetActive(false);
         }
     }
