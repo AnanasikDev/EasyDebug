@@ -4,9 +4,9 @@ using UnityEngine;
 
 public static class TextPromptManager
 {
-    // Settings
-    public static float TextSize = 2f;
-    public static Vector3 StartLocalOffset = new Vector3(0, 4, 0);
+    public static readonly float TextSize = 1.3f;
+    public static readonly float PromptDistance = 0.4f;
+    public static Vector3 StartLocalOffset = new Vector3(0, 1.5f, 0);
 
     private static readonly Dictionary<GameObject, PromptContainer> PromptContainers = new();
 

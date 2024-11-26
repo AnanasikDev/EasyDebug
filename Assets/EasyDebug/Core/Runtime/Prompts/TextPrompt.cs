@@ -42,9 +42,9 @@ public class TextPrompt
         // Add and configure the TextMeshPro component
         var textMeshPro = textObject.AddComponent<TextMeshPro>();
         textMeshPro.text = text;
-        textMeshPro.fontSize = 2f;
+        textMeshPro.fontSize = TextPromptManager.TextSize;
         textMeshPro.alignment = TextAlignmentOptions.Center;
-        textMeshPro.enableWordWrapping = false;
+        textMeshPro.textWrappingMode = TextWrappingModes.Normal;
 
         // Assign material (uses the default TMP material)
         textObject.GetComponent<Renderer>().material = textMeshPro.fontMaterial;
@@ -54,7 +54,8 @@ public class TextPrompt
 
     public void UpdateValue(string value, int priority)
     {
-        //_textMeshPro.text = value;
+        _textMeshPro.fontSize = TextPromptManager.TextSize;
+        _textMeshPro.text = value;
         Priority = priority;
     }
 
