@@ -1,8 +1,12 @@
-﻿using TMPro;
+﻿using EasyDebug.Prompts;
+using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 
 public class TextPrompt
 {
+    public static readonly List<TextPrompt> allPrompts = new List<TextPrompt>();
+
     public string Key { get; }
     public int Priority { get; private set; }
 
@@ -23,6 +27,7 @@ public class TextPrompt
         _textMeshPro.alignment = TextAlignmentOptions.Center;
 
         textObject.AddComponent<TextPromptFaceCamera>();
+        allPrompts.Add(this);
     }
 
     /// <summary>
@@ -62,5 +67,16 @@ public class TextPrompt
     public void SetLocalPosition(Vector3 localPosition)
     {
         _transform.localPosition = localPosition;
+    }
+
+    public void ToggleState(bool state)
+    {
+        _transform.gameObject.SetActive(state);
+    }
+
+    public void ForceDestroy()
+    {
+        if (_textMeshPro != null) GameObject.Destroy(_textMeshPro.gameObject);
+        if (_transform != null) GameObject.Destroy(_transform.gameObject);
     }
 }

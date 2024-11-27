@@ -1,4 +1,5 @@
 using UnityEngine;
+using EasyDebug.Prompts;
 
 public class TextPromptExample : MonoBehaviour
 {
