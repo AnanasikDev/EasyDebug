@@ -59,6 +59,7 @@ public class TextPrompt
 
     public void UpdateValue(string value, int priority)
     {
+        ToggleState(TextPromptManager.ShowAll);
         _textMeshPro.fontSize = TextPromptManager.TextSize;
         _textMeshPro.text = value;
         Priority = priority;
