@@ -5,8 +5,11 @@ namespace EasyDebug.Prompts
 {
     public class PromptContainer
     {
+        /// <summary>
+        /// Gameobject to which container is attached to
+        /// </summary>
         private GameObject _gameobject;
-        private Transform _promptsHandler;
+        private GameObject _promptsHandler;
         private Dictionary<string, TextPrompt> _prompts;
         private List<TextPrompt> _sortedPrompts;
 
@@ -16,9 +19,9 @@ namespace EasyDebug.Prompts
             _prompts = new Dictionary<string, TextPrompt>();
 
             _gameobject = gameobject;
-            _promptsHandler = new GameObject("TextPrompts").transform;
-            _promptsHandler.SetParent(_gameobject.transform);
-            _promptsHandler.localPosition = TextPromptManager.StartLocalOffset;
+            _promptsHandler = new GameObject("TextPrompts");
+            _promptsHandler.transform.SetParent(_gameobject.transform);
+            _promptsHandler.transform.localPosition = TextPromptManager.StartLocalOffset;
         }
 
         public void UpdatePrompt(string key, string value, int priority)
@@ -29,7 +32,7 @@ namespace EasyDebug.Prompts
             }
             else
             {
-                var newPrompt = new TextPrompt(key, value, priority, _promptsHandler);
+                var newPrompt = new TextPrompt(key, value, priority, _promptsHandler.transform);
                 _prompts[key] = newPrompt;
                 _sortedPrompts.Add(newPrompt);
                 SortPrompts();
@@ -54,6 +57,11 @@ namespace EasyDebug.Prompts
         public List<TextPrompt> GetAllPrompts()
         {
             return _sortedPrompts;
+        }
+
+        public GameObject GetGameobject()
+        {
+            return _promptsHandler;
         }
     }
 }

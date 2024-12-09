@@ -7,10 +7,12 @@ public class EasyDebugWindow : EditorWindow
 {
     private int tab = 0;
     private string[] tabs = new string[] { "General", "CommandLine", "Prompts", "PipeConsole" };
+    private static Color bgdefault;
 
     [MenuItem("Tools/EasyDebug")]
     public static void ShowWindow()
     {
+        bgdefault = GUI.backgroundColor;
         EditorWindow.GetWindow<EasyDebugWindow>();
     }
 
@@ -45,6 +47,33 @@ public class EasyDebugWindow : EditorWindow
     {
         GUILayout.Label("Runtime gameobject prompts manager");
         TextPromptManager.ShowAll = GUILayout.Toggle(TextPromptManager.ShowAll, "Show all");
+        
+        GUILayout.BeginHorizontal();
+
+        GUI.backgroundColor = new Color(1f, 0.65f, 0.68f);
+        
+        if (GUILayout.Button("Clear selected"))
+        {
+            foreach (Object obj in Selection.objects)
+            {
+                if (obj is GameObject)
+                    TextPromptManager.DestroyAllPrompts(obj as GameObject);
+            }
+        }
+
+        if (GUILayout.Button("Clear all"))
+        {
+            foreach (Object obj in TextPromptManager.GetAllGameobjects())
+            {
+                if (obj is GameObject)
+                    TextPromptManager.DestroyAllPrompts(obj as GameObject);
+            }
+        }
+
+        GUI.backgroundColor = bgdefault;
+
+        GUILayout.EndHorizontal();
+        TextPromptManager.transformMode = (TextPromptTransformMode)EditorGUILayout.EnumPopup(TextPromptManager.transformMode);
     }
 
     private void DrawTab_PipeConsole()

@@ -26,7 +26,7 @@ public class TextPrompt
         _textMeshPro.fontSize = TextPromptManager.TextSize;
         _textMeshPro.alignment = TextAlignmentOptions.Center;
 
-        textObject.AddComponent<TextPromptFaceCamera>();
+        textObject.AddComponent<TextPromptTransform>();
         allPrompts.Add(this);
     }
 
