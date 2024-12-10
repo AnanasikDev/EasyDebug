@@ -8,6 +8,7 @@ public class EasyDebugWindow : EditorWindow
     private int tab = 0;
     private string[] tabs = new string[] { "General", "CommandLine", "Prompts", "PipeConsole" };
     private static Color bgdefault;
+    private static string version = "2.0.4";
 
     [MenuItem("Tools/EasyDebug")]
     public static void ShowWindow()
@@ -22,7 +23,7 @@ public class EasyDebugWindow : EditorWindow
         // main body
 
         GUILayout.Space(20);
-        GUILayout.Label(Application.version + "v | Developed by Ananaseek");
+        GUILayout.Label(version + "v | Developed by Ananaseek");
     }
 
     private void DrawTab_CommandLine()

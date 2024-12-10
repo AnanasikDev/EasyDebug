@@ -29,10 +29,12 @@ namespace EasyDebug.Prompts
             if (_prompts.TryGetValue(key, out var prompt))
             {
                 prompt.UpdateValue(value, priority);
-            }
+                prompt.UpdateState();
+                }
             else
             {
                 var newPrompt = new TextPrompt(key, value, priority, _promptsHandler.transform);
+                newPrompt.UpdateState();
                 _prompts[key] = newPrompt;
                 _sortedPrompts.Add(newPrompt);
                 SortPrompts();
