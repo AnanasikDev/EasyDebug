@@ -33,7 +33,7 @@ namespace EasyDebug.CommandLine
                 Debug.Log("Resource loaded as " + prefab);
                 instance = Instantiate(prefab);
             }
-            instance.Init();
+            //instance.Init();
         }
 
         public static void Delete()

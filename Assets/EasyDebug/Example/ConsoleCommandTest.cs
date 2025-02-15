@@ -1,5 +1,5 @@
 ﻿using UnityEngine;
-using EasyDebug;
+using EasyDebug.CommandLine;
 
 public class ConsoleCommandTest : MonoBehaviour
 {

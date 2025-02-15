@@ -16,6 +16,8 @@ namespace EasyDebug.CommandLine
         public List<MethodInfo> methods = new List<MethodInfo>();
         public List<Command> commands = new List<Command>();
 
+        public Dictionary<Command, Type> command2script = new();
+
         public void Init()
         {
             methods = Assembly.GetExecutingAssembly()
@@ -26,6 +28,17 @@ namespace EasyDebug.CommandLine
 
             commands = methods.SelectMany(m => m.GetCustomAttributes<Command>()).ToList();
 
+            var types = Assembly.GetExecutingAssembly()
+                .GetTypes();
+            foreach (var type in types)
+            {
+                foreach (var m in type.GetMethods(access).Where(mi => mi.GetCustomAttributes<Command>().Any()))
+                {
+                    Debug.Log($"------ {m.GetCustomAttribute<Command>().GetHashCode()} {m.GetCustomAttribute<Command>().Serialize()} {type}");
+                    command2script.Add(m.GetCustomAttribute<Command>(), type);
+                }
+            }
+
             Debug.Log("Found " + methods.Count + " commands available:");
 
             foreach (var method in methods)
@@ -33,6 +46,17 @@ namespace EasyDebug.CommandLine
                 var attr = method.GetCustomAttribute<Command>();
                 Debug.Log("Found command: " + method.Name + " with return type = " + method.ReturnType + "; Attribute name is " + attr.name + " of length = " + attr.name.Length);
             }
+        }
+
+        private List<GameObject> FindGameobjectsByCommand(Command command)
+        {
+            List<GameObject> result = new();
+            foreach (var go in GameObject.FindObjectsByType<GameObject>(FindObjectsSortMode.None))
+            {
+                if (go.GetComponents(command2script[command]).Any())
+                    result.Add(go);
+            }
+            return result;
         }
 
         /// <summary>
@@ -82,6 +106,7 @@ namespace EasyDebug.CommandLine
         /// <summary>
         /// Format of a query must be as following (objectName.functionName arg1 arg2 arg...)
         /// objectName can be omitted if command is declared as global (.functionName arg1 arg2 arg...)
+        /// a function can also be called on all instances of a certain type using syntax (typeName::functionName arg1 arg2 arg...)
         /// args are optional in any case.
         /// </summary>
         /// <param name="query">Completed or non-completed input query from the command line</param>
@@ -134,16 +159,19 @@ namespace EasyDebug.CommandLine
             
             if (commandInfo.objectName == string.Empty)
             {
-                // if no name spacified, try find an object on scene which has that command implemented (with global tag on it)
+                // if no name specified, try find an object on scene which has that command implemented (with global tag on it)
                 for (int i = 0; i < commands.Count; i++)
                 {
                     if (commands[i].type == ConsoleCommandType.Global && commands[i].name == commandInfo.functionName)
                     {
-                        
+                        var gameobjects = FindGameobjectsByCommand(commands[i]);
+                        foreach (var go in gameobjects)
+                        {
+                            TryInvokeMethodOnGameObject(go, methods[i]);
+                        }
                         break;
                     }
                 }
-                //return;
             }
             var method = methods[index];
             GameObject obj = GameObject.Find(objectName);

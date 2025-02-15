@@ -3,6 +3,7 @@ using UnityEditor;
 using EasyDebug;
 using EasyDebug.Prompts;
 using System.Collections;
+using EasyDebug.CommandLine;
 
 public class EasyDebugWindow : EditorWindow
 {
