@@ -2,7 +2,7 @@ using System.Linq;
 using TMPro;
 using UnityEngine;
 
-namespace EasyDebug
+namespace EasyDebug.CommandLine
 {
     public class CommandLine : MonoBehaviour
     {
@@ -16,8 +16,14 @@ namespace EasyDebug
         [SerializeField] private TMP_InputField inputField;
         [SerializeField] private TMP_Dropdown suggestionsDropdown;
 
-        protected CommandLineEngine engine = new CommandLineEngine();
-        protected CommandLineSuggestions suggestions = new CommandLineSuggestions();
+        public CommandLineEngine engine = new CommandLineEngine();
+        public CommandLineSuggestions suggestions = new CommandLineSuggestions();
+
+        private void Start()
+        {
+            if (instance == null) instance = this;
+            Init();
+        }
 
         public static void Create()
         {

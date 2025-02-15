@@ -4,77 +4,8 @@ using System.Linq;
 using System.Reflection;
 using UnityEngine;
 
-namespace EasyDebug
+namespace EasyDebug.CommandLine
 {
-    public enum ConsoleCommandType
-    {
-        /// <summary>
-        /// Command can be identified and called using only name
-        /// </summary>
-        Global,
-
-        /// <summary>
-        /// Command can be identified and called using gameobject's name and name of the command
-        /// </summary>
-        ObjectRelative
-    }
-
-    [AttributeUsage(AttributeTargets.Method)]
-    public class Command : Attribute
-    {
-        public string name { get; private set; }
-        public ConsoleCommandType type { get; private set; }
-        // TODO: add optional custom prefix (i.e. player, time, etc ~ alias for gameobject name)
-
-        public Command(string name, ConsoleCommandType type)
-        {
-            this.name = name;
-            this.type = type;
-        }
-    }
-
-    internal class CommandInfo
-    {
-        /// <summary>
-        /// Object that the command is being applied to. Null if global/unspecified
-        /// </summary>
-        public string objectName = "";
-
-        /// <summary>
-        /// Name of the function/method being called
-        /// </summary>
-        public string functionName = "";
-
-        /// <summary>
-        /// Arguments passed through to the command
-        /// </summary>
-        public object[] args;
-
-        public static CommandInfo Empty { get { return new CommandInfo(); } }
-
-        public override bool Equals(object obj)
-        {
-            return obj is CommandInfo info &&
-                   objectName == info.objectName &&
-                   functionName == info.functionName &&
-                   EqualityComparer<object[]>.Default.Equals(args, info.args);
-        }
-
-        public override int GetHashCode()
-        {
-            return HashCode.Combine(objectName, functionName, args);
-        }
-
-        public static bool operator ==(CommandInfo a, CommandInfo b)
-        {
-            return a.objectName == b.objectName && a.functionName == b.functionName && (a.args == null || b.args == null || a.args.SequenceEqual(b.args));
-        }
-        public static bool operator !=(CommandInfo a, CommandInfo b)
-        {
-            return !(a == b);
-        }
-    }
-
     public class CommandLineEngine
     {
         public BindingFlags access = BindingFlags.Public |
@@ -82,8 +13,8 @@ namespace EasyDebug
                                      BindingFlags.Static |
                                      BindingFlags.Instance;
 
-        List<MethodInfo> methods = new List<MethodInfo>();
-        List<Command> commands = new List<Command>();
+        public List<MethodInfo> methods = new List<MethodInfo>();
+        public List<Command> commands = new List<Command>();
 
         public void Init()
         {
@@ -173,11 +104,11 @@ namespace EasyDebug
             result.functionName = result.functionName.Replace(".", "").Replace(" ", "");
             //Debug.Log("EXECUTE: commandName = " + commandName + " of length = " + commandName.Length);
 
-            if (result.functionName == string.Empty)
+            /*if (result.functionName == string.Empty)
             {
                 Debug.LogError("Command name is empty");
                 return CommandInfo.Empty;
-            }
+            }*/
 
             return result;
         }
@@ -198,14 +129,24 @@ namespace EasyDebug
                 //Debug.LogError($"Command with name {commandInfo.functionName} could not be found");
                 return;
             }
+
+            string objectName = commandInfo.objectName;
             
             if (commandInfo.objectName == string.Empty)
             {
                 // if no name spacified, try find an object on scene which has that command implemented (with global tag on it)
-                return;
+                for (int i = 0; i < commands.Count; i++)
+                {
+                    if (commands[i].type == ConsoleCommandType.Global && commands[i].name == commandInfo.functionName)
+                    {
+                        
+                        break;
+                    }
+                }
+                //return;
             }
             var method = methods[index];
-            GameObject obj = GameObject.Find(commandInfo.objectName);
+            GameObject obj = GameObject.Find(objectName);
             if (obj == null)
             {
                 //Debug.LogError($"Object with name {commandInfo.objectName} not found on the current scene");

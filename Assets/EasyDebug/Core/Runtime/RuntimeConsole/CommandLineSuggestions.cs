@@ -2,7 +2,7 @@
 using UnityEngine;
 using TMPro;
 
-namespace EasyDebug
+namespace EasyDebug.CommandLine
 {
     public class CommandLineSuggestions
     {

@@ -42,6 +42,13 @@ public class EasyDebugWindow : EditorWindow
         {
             PipeConsole.ClearConsole();
         }
+
+        GUILayout.Space(25);
+        GUILayout.Label("All found commands:");
+        for (int i = 0; i < CommandLine.instance?.engine?.commands.Count; i++)
+        {
+            GUILayout.Label($"{i}: {CommandLine.instance.engine.commands[i].Serialize()}");
+        }
     }
 
     private void DrawTab_Prompts()
