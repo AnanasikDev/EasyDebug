@@ -48,23 +48,15 @@ namespace EasyDebug.CommandLine
         void OnButtonClick(string buttonText)
         {
             var parsed = CommandLine.instance.engine.ParseInput(inputField.text);
-            PipeConsole.Print(parsed.Serialize(), inputField.text);
-            parsed.functionName = buttonText;
-            PipeConsole.Print(parsed.Serialize(), inputField.text);
+            if (CommandLine.instance.status == CommandLine.Status.EnteringFunctionName)
+            {
+                parsed.functionName = buttonText;
+            }
+            else if (CommandLine.instance.status == CommandLine.Status.EnteringObjectName)
+            {
+                parsed.objectName = buttonText;
+            }
             inputField.text = parsed.Serialize(); 
-            //Debug.Log($"{buttonText} clicked!");
-        }
-
-        public void UpdateDropdownOptions(string[] options)
-        {
-            Debug.Log("Dropdown updated");
-            // Clear existing options
-            //dropdown.ClearOptions();
-            UpdateValues(options);
-
-            // Add new options
-            //dropdown.AddOptions(options);
-            //dropdown.Show();
         }
     }
 }

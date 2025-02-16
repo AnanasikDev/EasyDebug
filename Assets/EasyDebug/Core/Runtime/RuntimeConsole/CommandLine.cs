@@ -18,6 +18,18 @@ namespace EasyDebug.CommandLine
         public CommandLineEngine engine = new CommandLineEngine();
         public CommandLineSuggestions suggestions;
 
+        public Status status
+        {
+            get
+            {
+                var parsed = engine.ParseInput(inputField.text);
+                if (!parsed.containsSeparator)
+                    return Status.EnteringObjectName;
+                else
+                    return Status.EnteringFunctionName;
+            }
+        }
+
         private void Start()
         {
             if (instance == null) instance = this;
@@ -74,6 +86,7 @@ namespace EasyDebug.CommandLine
             rectTransform.offsetMax = Vector3.zero;
 
             engine.Init();
+            OnInputChanged();
         }
 
         public void Update()
@@ -88,13 +101,19 @@ namespace EasyDebug.CommandLine
                 Submit();
             }
 
-            suggestions.UpdateDropdownOptions(engine.GetCommandsStartingWith(engine.ParseInput(inputField.text).functionName).Select(c => c.functionName).ToArray());
             inputField.Select();
+        }
 
-            /*if (isActive)
+        public void OnInputChanged()
+        {
+            if (status == Status.EnteringObjectName)
             {
-                suggestions.UpdateDropdownOptions(suggestionsDropdown, engine.GetCommandsStartingWith(engine.ParseInput(inputField.text).functionName).Select(c => c.name).ToList());
-            }*/
+                suggestions.UpdateValues(engine.SuggestObjects(engine.ParseInput(inputField.text)).ToArray());
+            }
+            else if (status == Status.EnteringFunctionName)
+            {
+                suggestions.UpdateValues(engine.SuggestFunctions(engine.ParseInput(inputField.text)).ToArray());
+            }
         }
 
         public void Submit()
@@ -126,6 +145,13 @@ namespace EasyDebug.CommandLine
         {
             isActive = false;
             gameObject.SetActive(false);
+        }
+
+        public enum Status
+        {
+            EnteringObjectName,
+            EnteringFunctionName,
+            EnteringArguments
         }
     }
 }

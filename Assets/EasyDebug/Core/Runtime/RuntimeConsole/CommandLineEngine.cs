@@ -60,6 +60,37 @@ namespace EasyDebug.CommandLine
         }
 
         /// <summary>
+        /// Checks if there are any available commands on the gameobject.
+        /// </summary>
+        private bool HasCommands(GameObject gameObject)
+        {
+            foreach (var script in gameObject.GetComponents<MonoBehaviour>())
+            {
+                if (script.GetType().GetMethods(access).Where(mi => mi.GetCustomAttributes<Command>().Any()).ToArray().Length > 0)
+                    return true;
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Returns all commands runnable on the specific gameobject.
+        /// </summary>
+        private List<Command> GetCommands(GameObject gameObject)
+        {
+            List<Command> result = new();
+            foreach (var script in gameObject.GetComponents<MonoBehaviour>())
+            {
+                foreach (var m in script.GetType().GetMethods(access))
+                {
+                    var cmd = m.GetCustomAttribute<Command>();
+                    if (cmd == null || cmd.accessType == ConsoleCommandType.Global) continue;
+                    result.Add(cmd);
+                }
+            }
+            return result;
+        }
+
+        /// <summary>
         /// Searches for a component on the GameObject with the specified method and invokes it if found.
         /// </summary>
         public void TryInvokeMethodOnGameObject(GameObject gameObject, MethodInfo methodInfo)
@@ -85,22 +116,85 @@ namespace EasyDebug.CommandLine
         }
 
         /// <summary>
-        /// Finds all commands which names start with the specified prefix.
+        /// Find the gameobject based on its name or alias
         /// </summary>
-        /// <param name="prefix">The prefix to search for in the command name.</param>
-        public List<Command> GetCommandsStartingWith(string prefix)
+        /// <param name="name"></param>
+        /// <returns></returns>
+        private List<GameObject> GetAllGameobjectsByName(string name)
         {
-            var matchingCommands = new List<Command>();
+            List<GameObject> result = new();
 
             foreach (var command in commands)
             {
-                if (command != null && command.functionName.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+                if (command.objectAlias == name)
                 {
-                    matchingCommands.Add(command);
+                    var gameobjects = FindGameobjectsByCommand(command);
+                    result = result.Union(gameobjects).ToList();
+                    break;
                 }
             }
 
-            return matchingCommands;
+            foreach (var gameObject in GameObject.FindObjectsByType<GameObject>(FindObjectsSortMode.None))
+            {
+                if (gameObject.name == name)
+                {
+                    result.Add(gameObject);
+                }
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// Finds all commands which names start with the specified prefix.
+        /// </summary>
+        /// <param name="prefix">The prefix to search for in the command name.</param>
+        public List<string> SuggestFunctions(ParsedCommand parsedCommand)
+        {
+            var result = new List<string>();
+
+            List<GameObject> gameobjects = GetAllGameobjectsByName(parsedCommand.objectName); 
+
+            foreach (GameObject gameobject in gameobjects)
+            {
+                foreach (var command in GetCommands(gameobject))
+                {
+                    if (command.functionName.StartsWith(parsedCommand.functionName, StringComparison.OrdinalIgnoreCase))
+                    {
+                        result.Add(command.functionName);
+                    }
+                }
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Finds all gameobjects and aliases which names start with the specified prefix.
+        /// </summary>
+        /// <param name="prefix">The prefix to search for in the gameobject/alias name.</param>
+        public List<string> SuggestObjects(ParsedCommand parsedCommand)
+        {
+            List<string> names = new();
+
+            foreach (var command in commands)
+            {
+                if (command.objectAlias != string.Empty && command.objectAlias.StartsWith(parsedCommand.objectName, StringComparison.OrdinalIgnoreCase))
+                {
+                    if (names.Contains(command.objectAlias)) continue;
+                    names.Add(command.objectAlias);
+                }
+            }
+
+            foreach (var gameObject in GameObject.FindObjectsByType<GameObject>(FindObjectsSortMode.None))
+            {
+                if (HasCommands(gameObject) && gameObject.name.StartsWith(parsedCommand.objectName, StringComparison.OrdinalIgnoreCase))
+                {
+                    if (names.Contains(gameObject.name)) continue;
+                    names.Add(gameObject.name);
+                }
+            }
+
+            return names;
         }
 
         /// <summary>
@@ -120,6 +214,8 @@ namespace EasyDebug.CommandLine
                 result.objectName = query;
                 return result;
             }
+
+            result.containsSeparator = true;
 
             result.objectName = query.Split('.')[0];
             result.functionName = result.objectName == string.Empty ? query.Split(" ")[0] : query.Split(".")[1].Split(" ")[0];

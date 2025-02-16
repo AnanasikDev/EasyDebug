@@ -7,7 +7,7 @@ namespace EasyDebug.CommandLine
     /// <summary>
     /// Unifies raw input into CLI in the format of "objectName.functionName args**"
     /// </summary>
-    internal class ParsedCommand
+    public class ParsedCommand
     {
         /// <summary>
         /// Object that the command is being applied to. Null if global/unspecified
@@ -23,6 +23,8 @@ namespace EasyDebug.CommandLine
         /// Arguments passed through to the command
         /// </summary>
         public object[] args;
+
+        public bool containsSeparator = false;
 
         public static ParsedCommand Empty { get { return new ParsedCommand(); } }
 
