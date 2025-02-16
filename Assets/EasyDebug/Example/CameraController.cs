@@ -12,7 +12,7 @@ namespace EasyDebug.Example
 
         private void Start()
         {
-            Cursor.lockState = CursorLockMode.Locked;
+            //Cursor.lockState = CursorLockMode.Locked;
 
             // Initialize rotation angles from the current rotation
             globalEulerAngles = transform.eulerAngles;

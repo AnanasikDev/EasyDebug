@@ -44,7 +44,7 @@ namespace EasyDebug.CommandLine
             foreach (var method in methods)
             {
                 var attr = method.GetCustomAttribute<Command>();
-                Debug.Log("Found command: " + method.Name + " with return type = " + method.ReturnType + "; Attribute name is " + attr.name + " of length = " + attr.name.Length);
+                Debug.Log("Found command: " + method.Name + " with return type = " + method.ReturnType + "; Attribute name is " + attr.functionName + " of length = " + attr.functionName.Length);
             }
         }
 
@@ -94,7 +94,7 @@ namespace EasyDebug.CommandLine
 
             foreach (var command in commands)
             {
-                if (command != null && command.name.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+                if (command != null && command.functionName.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
                 {
                     matchingCommands.Add(command);
                 }
@@ -116,24 +116,15 @@ namespace EasyDebug.CommandLine
             if (query == string.Empty) return CommandInfo.Empty;
             if (query.Contains('.') == false)
             {
-                Debug.LogWarning($"Command Line could not execute command ({query}) as it has no '.' sign in it");
+                //Debug.LogWarning($"Command Line could not execute command ({query}) as it has no '.' sign in it");
                 return CommandInfo.Empty;
             }
 
             CommandInfo result = new CommandInfo();
 
             result.objectName = query.Split('.')[0];
-            //Debug.Log("EXECUTE: objectName = " + objectName + " of length = " + objectName.Length);
-
             result.functionName = result.objectName == string.Empty ? query.Split(" ")[0] : query.Split(".")[1].Split(" ")[0];
             result.functionName = result.functionName.Replace(".", "").Replace(" ", "");
-            //Debug.Log("EXECUTE: commandName = " + commandName + " of length = " + commandName.Length);
-
-            /*if (result.functionName == string.Empty)
-            {
-                Debug.LogError("Command name is empty");
-                return CommandInfo.Empty;
-            }*/
 
             return result;
         }
@@ -147,7 +138,7 @@ namespace EasyDebug.CommandLine
                 return;
             }
 
-            int index = commands.FindIndex(0, (Command c) => c.name == commandInfo.functionName);
+            int index = commands.FindIndex(0, (Command c) => c.functionName == commandInfo.functionName);
             
             if (index == -1)
             {
@@ -162,7 +153,7 @@ namespace EasyDebug.CommandLine
                 // if no name specified, try find an object on scene which has that command implemented (with global tag on it)
                 for (int i = 0; i < commands.Count; i++)
                 {
-                    if (commands[i].type == ConsoleCommandType.Global && commands[i].name == commandInfo.functionName)
+                    if (commands[i].accessType == ConsoleCommandType.Global && commands[i].functionName == commandInfo.functionName)
                     {
                         var gameobjects = FindGameobjectsByCommand(commands[i]);
                         foreach (var go in gameobjects)
@@ -182,12 +173,6 @@ namespace EasyDebug.CommandLine
             }
 
             TryInvokeMethodOnGameObject(obj, method);
-        }
-
-        [Command("EngineFuncHEHE", ConsoleCommandType.ObjectRelative)]
-        public void EngineFunc()
-        {
-            Debug.Log("Ok this one works noice");
         }
     }
 }

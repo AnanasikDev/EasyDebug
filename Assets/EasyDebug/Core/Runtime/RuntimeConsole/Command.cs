@@ -21,18 +21,18 @@ namespace EasyDebug.CommandLine
     [AttributeUsage(AttributeTargets.Method)]
     public class Command : Attribute
     {
-        public string name { get; private set; }
-        public ConsoleCommandType type { get; private set; }
+        public string functionName { get; private set; }
+        public ConsoleCommandType accessType { get; private set; }
         // TODO: add optional custom prefix (i.e. player, time, etc ~ alias for gameobject name)
 
         public Command(string name, ConsoleCommandType type)
         {
-            this.name = name;
-            this.type = type;
+            this.functionName = name;
+            this.accessType = type;
         }
         public string Serialize()
         {
-            return $"{name}, {type}";
+            return $"{functionName}, {accessType}";
         }
     }
 }

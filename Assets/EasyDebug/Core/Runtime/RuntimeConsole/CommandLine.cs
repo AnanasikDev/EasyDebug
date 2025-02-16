@@ -14,10 +14,9 @@ namespace EasyDebug.CommandLine
         public bool isActive { get; private set; } = false;
 
         [SerializeField] private TMP_InputField inputField;
-        [SerializeField] private TMP_Dropdown suggestionsDropdown;
 
         public CommandLineEngine engine = new CommandLineEngine();
-        public CommandLineSuggestions suggestions = new CommandLineSuggestions();
+        public CommandLineSuggestions suggestions;
 
         private void Start()
         {
@@ -84,7 +83,7 @@ namespace EasyDebug.CommandLine
                 Toggle();
             }
 
-            suggestions.UpdateDropdownOptions(suggestionsDropdown, engine.GetCommandsStartingWith(engine.ParseInput(inputField.text).functionName).Select(c => c.name).ToList());
+            suggestions.UpdateDropdownOptions(engine.GetCommandsStartingWith(engine.ParseInput(inputField.text).functionName).Select(c => c.functionName).ToArray());
             inputField.Select();
 
             /*if (isActive)
