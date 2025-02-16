@@ -78,9 +78,14 @@ namespace EasyDebug.CommandLine
 
         public void Update()
         {
-            if (Input.GetKeyDown(KeyCode.Slash))
+            if (!inputField.isFocused && Input.GetKeyDown(KeyCode.Slash))
             {
                 Toggle();
+            }
+
+            if (inputField.text != string.Empty && Input.GetKeyDown(KeyCode.Return))
+            {
+                Submit();
             }
 
             suggestions.UpdateDropdownOptions(engine.GetCommandsStartingWith(engine.ParseInput(inputField.text).functionName).Select(c => c.functionName).ToArray());

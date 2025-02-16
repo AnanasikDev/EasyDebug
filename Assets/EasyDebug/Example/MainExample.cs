@@ -25,13 +25,13 @@ public class MainExample : MonoBehaviour
         Debug.Log("Heh that's 3:D");
     }
 
-    [Command("hello", ConsoleCommandType.Global)]
+    [Command("hello", ConsoleCommandType.ObjectRelative, "manager")]
     public void MyCustomCommand2()
     {
         Debug.Log("Hullooo");
     }
 
-    [Command("ohohoh", ConsoleCommandType.Global)]
+    [Command("ohohoh", ConsoleCommandType.ObjectRelative, "manager")]
     public void MyCustomCommand3()
     {
         Debug.Log("3 ohoh");

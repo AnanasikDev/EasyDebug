@@ -34,17 +34,17 @@ namespace EasyDebug.CommandLine
             {
                 foreach (var m in type.GetMethods(access).Where(mi => mi.GetCustomAttributes<Command>().Any()))
                 {
-                    Debug.Log($"------ {m.GetCustomAttribute<Command>().GetHashCode()} {m.GetCustomAttribute<Command>().Serialize()} {type}");
+                    //Debug.Log($"------ {m.GetCustomAttribute<Command>().GetHashCode()} {m.GetCustomAttribute<Command>().Serialize()} {type}");
                     command2script.Add(m.GetCustomAttribute<Command>(), type);
                 }
             }
 
-            Debug.Log("Found " + methods.Count + " commands available:");
+            //Debug.Log("Found " + methods.Count + " commands available:");
 
             foreach (var method in methods)
             {
                 var attr = method.GetCustomAttribute<Command>();
-                Debug.Log("Found command: " + method.Name + " with return type = " + method.ReturnType + "; Attribute name is " + attr.functionName + " of length = " + attr.functionName.Length);
+                //Debug.Log("Found command: " + method.Name + " with return type = " + method.ReturnType + "; Attribute name is " + attr.functionName + " of length = " + attr.functionName.Length);
             }
         }
 
@@ -106,21 +106,20 @@ namespace EasyDebug.CommandLine
         /// <summary>
         /// Format of a query must be as following (objectName.functionName arg1 arg2 arg...)
         /// objectName can be omitted if command is declared as global (.functionName arg1 arg2 arg...)
-        /// a function can also be called on all instances of a certain type using syntax (typeName::functionName arg1 arg2 arg...)
         /// args are optional in any case.
         /// </summary>
         /// <param name="query">Completed or non-completed input query from the command line</param>
         /// <returns>Deformatted string into a temporary CommandInfo without connection to real commands</returns>
-        internal CommandInfo ParseInput(string query)
+        internal ParsedCommand ParseInput(string query)
         {
-            if (query == string.Empty) return CommandInfo.Empty;
+            query = query.Trim();
+            if (query == string.Empty) return ParsedCommand.Empty;
+            ParsedCommand result = new ParsedCommand();
             if (query.Contains('.') == false)
             {
-                //Debug.LogWarning($"Command Line could not execute command ({query}) as it has no '.' sign in it");
-                return CommandInfo.Empty;
+                result.objectName = query;
+                return result;
             }
-
-            CommandInfo result = new CommandInfo();
 
             result.objectName = query.Split('.')[0];
             result.functionName = result.objectName == string.Empty ? query.Split(" ")[0] : query.Split(".")[1].Split(" ")[0];
@@ -131,14 +130,14 @@ namespace EasyDebug.CommandLine
 
         public void Execute(string query)
         {
-            CommandInfo commandInfo = ParseInput(query);
-            if (commandInfo == CommandInfo.Empty)
+            ParsedCommand parsedCommand = ParseInput(query);
+            if (parsedCommand == ParsedCommand.Empty)
             {
                 //Debug.LogError("Command Line Query parse failed");
                 return;
             }
 
-            int index = commands.FindIndex(0, (Command c) => c.functionName == commandInfo.functionName);
+            int index = commands.FindIndex(0, (Command c) => c.functionName == parsedCommand.functionName);
             
             if (index == -1)
             {
@@ -146,24 +145,41 @@ namespace EasyDebug.CommandLine
                 return;
             }
 
-            string objectName = commandInfo.objectName;
+            string objectName = parsedCommand.objectName;
             
-            if (commandInfo.objectName == string.Empty)
+            if (parsedCommand.objectName == string.Empty)
             {
                 // if no name specified, try find an object on scene which has that command implemented (with global tag on it)
                 for (int i = 0; i < commands.Count; i++)
                 {
-                    if (commands[i].accessType == ConsoleCommandType.Global && commands[i].functionName == commandInfo.functionName)
+                    if (commands[i].accessType == ConsoleCommandType.Global && commands[i].functionName == parsedCommand.functionName)
                     {
                         var gameobjects = FindGameobjectsByCommand(commands[i]);
                         foreach (var go in gameobjects)
                         {
                             TryInvokeMethodOnGameObject(go, methods[i]);
                         }
-                        break;
+                        return;
                     }
                 }
             }
+
+            else // try find alias
+            {
+                for (int i = 0; i < commands.Count; i++)
+                {
+                    if (commands[i].objectAlias == parsedCommand.objectName && commands[i].accessType == ConsoleCommandType.ObjectRelative && commands[i].functionName == parsedCommand.functionName)
+                    {
+                        var gameobjects = FindGameobjectsByCommand(commands[i]);
+                        foreach (var go in gameobjects)
+                        {
+                            TryInvokeMethodOnGameObject(go, methods[i]);
+                        }
+                        return;
+                    }
+                }
+            }
+
             var method = methods[index];
             GameObject obj = GameObject.Find(objectName);
             if (obj == null)

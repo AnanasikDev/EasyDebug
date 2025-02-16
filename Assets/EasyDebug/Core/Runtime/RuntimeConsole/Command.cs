@@ -23,16 +23,18 @@ namespace EasyDebug.CommandLine
     {
         public string functionName { get; private set; }
         public ConsoleCommandType accessType { get; private set; }
+        public string objectAlias = "";
         // TODO: add optional custom prefix (i.e. player, time, etc ~ alias for gameobject name)
 
-        public Command(string name, ConsoleCommandType type)
+        public Command(string name, ConsoleCommandType type, string objectAlias = "")
         {
             this.functionName = name;
             this.accessType = type;
+            this.objectAlias = objectAlias;
         }
         public string Serialize()
         {
-            return $"{functionName}, {accessType}";
+            return $"{functionName}, {accessType} with alias {objectAlias}";
         }
     }
 }

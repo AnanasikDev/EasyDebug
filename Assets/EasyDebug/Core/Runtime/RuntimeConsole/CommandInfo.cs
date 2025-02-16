@@ -7,7 +7,7 @@ namespace EasyDebug.CommandLine
     /// <summary>
     /// Unifies raw input into CLI in the format of "objectName.functionName args**"
     /// </summary>
-    internal class CommandInfo
+    internal class ParsedCommand
     {
         /// <summary>
         /// Object that the command is being applied to. Null if global/unspecified
@@ -24,11 +24,11 @@ namespace EasyDebug.CommandLine
         /// </summary>
         public object[] args;
 
-        public static CommandInfo Empty { get { return new CommandInfo(); } }
+        public static ParsedCommand Empty { get { return new ParsedCommand(); } }
 
         public override bool Equals(object obj)
         {
-            return obj is CommandInfo info &&
+            return obj is ParsedCommand info &&
                    objectName == info.objectName &&
                    functionName == info.functionName &&
                    EqualityComparer<object[]>.Default.Equals(args, info.args);
@@ -39,13 +39,17 @@ namespace EasyDebug.CommandLine
             return HashCode.Combine(objectName, functionName, args);
         }
 
-        public static bool operator ==(CommandInfo a, CommandInfo b)
+        public static bool operator ==(ParsedCommand a, ParsedCommand b)
         {
             return a.objectName == b.objectName && a.functionName == b.functionName && (a.args == null || b.args == null || a.args.SequenceEqual(b.args));
         }
-        public static bool operator !=(CommandInfo a, CommandInfo b)
+        public static bool operator !=(ParsedCommand a, ParsedCommand b)
         {
             return !(a == b);
+        }
+        public string Serialize()
+        {
+            return $"{objectName}.{functionName}".Trim(); //{PipeConsole.Commit(args).Parse(Parser.Harsh).Print()}
         }
     }
 }

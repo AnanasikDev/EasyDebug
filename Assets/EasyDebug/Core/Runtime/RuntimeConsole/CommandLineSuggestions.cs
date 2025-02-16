@@ -47,7 +47,11 @@ namespace EasyDebug.CommandLine
 
         void OnButtonClick(string buttonText)
         {
-            inputField.text = buttonText;
+            var parsed = CommandLine.instance.engine.ParseInput(inputField.text);
+            PipeConsole.Print(parsed.Serialize(), inputField.text);
+            parsed.functionName = buttonText;
+            PipeConsole.Print(parsed.Serialize(), inputField.text);
+            inputField.text = parsed.Serialize(); 
             //Debug.Log($"{buttonText} clicked!");
         }
 
