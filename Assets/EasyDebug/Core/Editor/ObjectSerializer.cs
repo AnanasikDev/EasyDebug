@@ -11,13 +11,11 @@ internal class ObjectSerializer
     public static ObjectSerializer instance;
     public GameObject obj;
 
-    public BindingFlags access = BindingFlags.Public |
-                                 BindingFlags.NonPublic |
-                                 BindingFlags.Static |
-                                 BindingFlags.Instance;
-
     public bool onlyScripts = true;
     public bool allAssemblies = false;
+    public bool showStatic = false;
+    public bool showProperties = true;
+    public bool showFields = true;
 
     public List<AssemblyDefinitionAsset> includedAssemblyDefinitions = new List<AssemblyDefinitionAsset>();
     private HashSet<string> includedAssemblyNames = new HashSet<string>();
@@ -25,8 +23,7 @@ internal class ObjectSerializer
     public ObjectSerializer()
     {
         instance = this;
-        RefreshAssemblyList();
-    }
+        RefreshAssemblyList();    }
 
     public void RefreshAssemblyList()
     {
@@ -51,6 +48,9 @@ internal class ObjectSerializer
 
         StringBuilder sb = new StringBuilder();
 
+        BindingFlags access = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance;
+        if (showStatic) access = access | BindingFlags.Static;
+
         Type type = onlyScripts ? typeof(MonoBehaviour) : typeof(Component);
 
         foreach (var script in obj.GetComponents(type))
@@ -58,13 +58,24 @@ internal class ObjectSerializer
             if (!allAssemblies && !IsUserDefined(script.GetType())) continue;
 
             sb.AppendLine($"<color=#FFA500>===== {script.GetType().Name} =====</color>");
-            foreach (var field in script.GetType().GetFields(access))
+            if (showFields) foreach (var field in script.GetType().GetFields(access))
             {
                 string typeName = FormatTypeName(field.FieldType);
                 string fieldName = field.Name;
                 string fieldValue = FormatValue(field.GetValue(script));
 
                 sb.AppendLine($"<color=#00FF00>{typeName}</color> <color=#87CEFA>{fieldName}</color>: <color=#FFD700>{fieldValue}</color>");
+            }
+
+            if (showProperties) foreach (var prop in script.GetType().GetProperties(access))
+            {
+                if (prop.GetCustomAttribute<ObsoleteAttribute>() != null) continue;
+
+                string typeName = FormatTypeName(prop.PropertyType);
+                string fieldName = prop.Name;
+                string fieldValue = FormatValue(prop.GetValue(script));
+
+                sb.AppendLine($"<color=#CAFC01>{typeName}</color> <color=#87CEFA>{fieldName}</color>: <color=#FFD700>{fieldValue}</color>");
             }
         }
 

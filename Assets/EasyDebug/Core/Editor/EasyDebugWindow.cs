@@ -126,6 +126,9 @@ namespace EasyDebug
 
             serializer.allAssemblies = GUILayout.Toggle(serializer.allAssemblies, "All assemblies");
             serializer.onlyScripts = GUILayout.Toggle(serializer.onlyScripts, "Only scripts");
+            serializer.showStatic = GUILayout.Toggle(serializer.showStatic, "Show static");
+            serializer.showFields = GUILayout.Toggle(serializer.showFields, "Show fields");
+            serializer.showProperties = GUILayout.Toggle(serializer.showProperties, "Show properties");
 
             if (!serializer.allAssemblies)
             {
