@@ -91,6 +91,24 @@ namespace EasyDebug.CommandLine
         }
 
         /// <summary>
+        /// Returns all commands runnable on the specific gameobject.
+        /// </summary>
+        private List<Command> GetGlobalCommands(GameObject gameObject)
+        {
+            List<Command> result = new();
+            foreach (var script in gameObject.GetComponents<MonoBehaviour>())
+            {
+                foreach (var m in script.GetType().GetMethods(access))
+                {
+                    var cmd = m.GetCustomAttribute<Command>();
+                    if (cmd == null || cmd.accessType != ConsoleCommandType.Global) continue;
+                    result.Add(cmd);
+                }
+            }
+            return result;
+        }
+
+        /// <summary>
         /// Searches for a component on the GameObject with the specified method and invokes it if found.
         /// </summary>
         public void TryInvokeMethodOnGameObject(GameObject gameObject, MethodInfo methodInfo)
@@ -152,13 +170,31 @@ namespace EasyDebug.CommandLine
         {
             var result = new List<string>();
 
+            // if searching for global commands
+            if (parsedCommand.objectName == string.Empty)
+            {
+                foreach (var gameobject in GameObject.FindObjectsByType<GameObject>(FindObjectsSortMode.None))
+                {
+                    foreach (var command in GetGlobalCommands(gameobject))
+                    {
+                        if (command.accessType == ConsoleCommandType.Global && command.functionName.StartsWith(parsedCommand.functionName, StringComparison.OrdinalIgnoreCase))
+                        {
+                            result.Add(command.functionName);
+                        }
+                    }
+                }
+                return result;
+            }
+
+            // object-relative commands only
+
             List<GameObject> gameobjects = GetAllGameobjectsByName(parsedCommand.objectName); 
 
             foreach (GameObject gameobject in gameobjects)
             {
                 foreach (var command in GetCommands(gameobject))
                 {
-                    if (command.functionName.StartsWith(parsedCommand.functionName, StringComparison.OrdinalIgnoreCase))
+                    if (command.accessType == ConsoleCommandType.ObjectRelative && command.functionName.StartsWith(parsedCommand.functionName, StringComparison.OrdinalIgnoreCase))
                     {
                         result.Add(command.functionName);
                     }

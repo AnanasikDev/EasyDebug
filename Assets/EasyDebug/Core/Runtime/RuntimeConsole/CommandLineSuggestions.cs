@@ -1,8 +1,7 @@
-﻿using System.Collections.Generic;
-using UnityEngine;
+﻿using System.Collections;
 using TMPro;
+using UnityEngine;
 using UnityEngine.UI;
-using System.Collections;
 
 namespace EasyDebug.CommandLine
 {
@@ -23,12 +22,6 @@ namespace EasyDebug.CommandLine
                 btn.GetComponent<Button>().onClick.AddListener(() => OnButtonClick(btn.GetComponentInChildren<TextMeshProUGUI>().text));
                 return btn;
             };
-
-            // Example: Creating 10 buttons
-            /*for (int i = 0; i < 10; i++)
-            {
-                CreateButton($"Button {i + 1}");
-            }*/
         }
 
         void CreateButton(string buttonText)
