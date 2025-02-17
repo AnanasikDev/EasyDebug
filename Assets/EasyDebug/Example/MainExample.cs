@@ -36,6 +36,66 @@ public class MainExample : MonoBehaviour
     {
         Debug.Log("3 ohoh");
     }
+
+    [Command("a", ConsoleCommandType.ObjectRelative)]
+    public void _1()
+    {
+        Debug.Log("1");
+    }
+
+    [Command("ab", ConsoleCommandType.ObjectRelative)]
+    public void _2()
+    {
+        Debug.Log("2");
+    }
+
+    [Command("abc", ConsoleCommandType.ObjectRelative)]
+    public void _3()
+    {
+        Debug.Log("3");
+    }
+
+    [Command("abcd", ConsoleCommandType.ObjectRelative)]
+    public void _4()
+    {
+        Debug.Log("4");
+    }
+
+    [Command("abcde", ConsoleCommandType.ObjectRelative)]
+    public void _5()
+    {
+        Debug.Log("5");
+    }
+
+    [Command("abcdf", ConsoleCommandType.ObjectRelative)]
+    public void _6()
+    {
+        Debug.Log("6");
+    }
+
+    [Command("abcdfg", ConsoleCommandType.ObjectRelative)]
+    public void _7()
+    {
+        Debug.Log("7");
+    }
+
+    [Command("abcdfgf", ConsoleCommandType.ObjectRelative)]
+    public void _8()
+    {
+        Debug.Log("7");
+    }
+
+    [Command("abcdfgfd", ConsoleCommandType.ObjectRelative)]
+    public void _9()
+    {
+        Debug.Log("7");
+    }
+
+    [Command("abcdfgfd2", ConsoleCommandType.ObjectRelative)]
+    public void _10()
+    {
+        Debug.Log("7");
+    }
 }
 
 public class A
