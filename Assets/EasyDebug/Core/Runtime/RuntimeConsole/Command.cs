@@ -34,7 +34,7 @@ namespace EasyDebug.CommandLine
         }
         public string Serialize()
         {
-            return $"{functionName}, {accessType} with alias {objectAlias}";
+            return $"{functionName}, {accessType}" + (objectAlias == string.Empty ? "" : $" with alias {objectAlias}");
         }
     }
 }

@@ -2,6 +2,7 @@
 using UnityEngine;
 using TMPro;
 using UnityEngine.UI;
+using System.Collections;
 
 namespace EasyDebug.CommandLine
 {
@@ -12,6 +13,7 @@ namespace EasyDebug.CommandLine
         public TMP_InputField inputField;
 
         public Pool<Button> buttons = new(x => x.gameObject.activeSelf);
+        public event System.Action onSuggestionAcceptedEvent;
 
         void Start()
         {
@@ -56,7 +58,15 @@ namespace EasyDebug.CommandLine
             {
                 parsed.objectName = buttonText;
             }
-            inputField.text = parsed.Serialize(); 
+            inputField.text = parsed.Serialize();
+            StartCoroutine(MoveTextEnd_NextFrame());
+            onSuggestionAcceptedEvent?.Invoke();
+        }
+
+        IEnumerator MoveTextEnd_NextFrame()
+        {
+            yield return 0;
+            inputField.MoveTextEnd(false);
         }
     }
 }
