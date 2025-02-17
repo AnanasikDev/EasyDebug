@@ -64,7 +64,9 @@ internal class ObjectSerializer
                 string fieldName = field.Name;
                 string fieldValue = FormatValue(field.GetValue(script));
 
-                sb.AppendLine($"<color=#00FF00>{typeName}</color> <color=#87CEFA>{fieldName}</color>: <color=#FFD700>{fieldValue}</color>");
+                string prefix = field.IsStatic ? "<color=#EEEEEF>static</color> " : "";
+
+                sb.AppendLine(prefix + $"<color=#00FF00>{typeName}</color> <color=#87CEFA>{fieldName}</color><color=#EEEEEE>:</color> <color=#FFD700>{fieldValue}</color>");
             }
 
             if (showProperties) foreach (var prop in script.GetType().GetProperties(access))
@@ -75,7 +77,9 @@ internal class ObjectSerializer
                 string fieldName = prop.Name;
                 string fieldValue = FormatValue(prop.GetValue(script));
 
-                sb.AppendLine($"<color=#CAFC01>{typeName}</color> <color=#87CEFA>{fieldName}</color>: <color=#FFD700>{fieldValue}</color>");
+                string prefix = "<color=#EEEEEF>" + (prop.CanRead ? "r" : "" + (prop.CanWrite ? "w" : "")) + "</color> ";
+
+                sb.AppendLine(prefix + $"<color=#CAFC01>{typeName}</color> <color=#87CEFA>{fieldName}</color><color=#EEEEEE>:</color> <color=#FFD700>{fieldValue}</color>");
             }
         }
 

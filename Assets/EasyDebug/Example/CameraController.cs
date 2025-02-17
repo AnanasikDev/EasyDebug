@@ -10,6 +10,8 @@ namespace EasyDebug.Example
         private Vector3 globalEulerAngles;
         private bool followMouse = true;
 
+        private bool myProp { get; set; }
+
         private void Start()
         {
             //Cursor.lockState = CursorLockMode.Locked;
