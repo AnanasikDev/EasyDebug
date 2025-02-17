@@ -1,7 +1,7 @@
 using EasyDebug.Prompts;
 using UnityEditor;
+using UnityEditorInternal;
 using UnityEngine;
-using EasyDebug.CommandLine;
 
 namespace EasyDebug
 {
@@ -12,6 +12,24 @@ namespace EasyDebug
         private static Color bgdefault;
         private static string version = "3.0.1 alpha";
         private Vector2 scroll;
+
+        private bool _alwaysUpdate = true;
+        private bool alwaysUpdate 
+        { 
+            get 
+            { 
+                return _alwaysUpdate; 
+            } 
+            set 
+            { 
+                if (value != _alwaysUpdate)
+                {
+                    _alwaysUpdate = value;
+                    if (_alwaysUpdate) OnEnable();
+                    else OnDisable();
+                }
+            } 
+        }
 
         private ObjectSerializer serializer = new();
 
@@ -28,6 +46,8 @@ namespace EasyDebug
 
             GUILayout.Space(20);
             GUILayout.Label(version + "v | Developed by Ananaseek");
+
+            alwaysUpdate = GUILayout.Toggle(alwaysUpdate, "Always update");
         }
 
         private void DrawTab_CommandLine()
@@ -103,12 +123,65 @@ namespace EasyDebug
             scroll = GUILayout.BeginScrollView(scroll);
 
             serializer.obj = (GameObject)EditorGUILayout.ObjectField("", serializer.obj, typeof(GameObject), true);
+
+            serializer.allAssemblies = GUILayout.Toggle(serializer.allAssemblies, "All assemblies");
+            serializer.onlyScripts = GUILayout.Toggle(serializer.onlyScripts, "Only scripts");
+
+            if (!serializer.allAssemblies)
+            {
+                GUILayout.Label("Included Assembly Definitions:", EditorStyles.boldLabel);
+
+                // Display the default "Assembly-CSharp" as a non-editable entry
+                EditorGUILayout.LabelField("• Assembly-CSharp (default)", EditorStyles.miniLabel);
+
+                if (GUILayout.Button("Add Assembly Definition"))
+                {
+                    serializer.includedAssemblyDefinitions.Add(null);
+                }
+
+                for (int i = 0; i < serializer.includedAssemblyDefinitions.Count; i++)
+                {
+                    EditorGUILayout.BeginHorizontal();
+                    serializer.includedAssemblyDefinitions[i] = (AssemblyDefinitionAsset)EditorGUILayout.ObjectField(
+                        serializer.includedAssemblyDefinitions[i], typeof(AssemblyDefinitionAsset), false
+                    );
+                    if (GUILayout.Button("X", GUILayout.Width(20)))
+                    {
+                        serializer.includedAssemblyDefinitions.RemoveAt(i);
+                    }
+                    EditorGUILayout.EndHorizontal();
+                }
+
+                if (GUILayout.Button("Refresh Assemblies"))
+                {
+                    serializer.RefreshAssemblyList();
+                }
+            }
+
             if (serializer.obj != null)
             {
-                GUILayout.Label(serializer.Serialize());
+                GUILayout.Label(serializer.Serialize(), new GUIStyle { richText = true });
             }
+
             GUILayout.EndScrollView();
         }
+
+
+        private void OnEnable()
+        {
+            EditorApplication.update += ForceRepaint;
+        }
+
+        private void OnDisable()
+        {
+            EditorApplication.update -= ForceRepaint;
+        }
+
+        private void ForceRepaint()
+        {
+            Repaint(); // Forces the editor window to update every frame
+        }
+
 
         private void OnGUI()
         {
