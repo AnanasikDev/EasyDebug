@@ -44,7 +44,10 @@ namespace EasyDebug.CommandLine
                 Debug.Log("Resource loaded as " + prefab);
                 instance = Instantiate(prefab);
             }
-            //instance.Init();
+            if (Application.isPlaying)
+            {
+                instance.Init();
+            }
         }
 
         public static void Delete()
@@ -84,8 +87,10 @@ namespace EasyDebug.CommandLine
             rectTransform.pivot = new Vector2(0.5f, 1);
             rectTransform.offsetMin = new Vector2(0, -height);
             rectTransform.offsetMax = Vector3.zero;
+            inputField.onFocusSelectAll = false;
 
             engine.Init();
+            suggestions.Init();
             OnInputChanged();
         }
 
@@ -100,8 +105,6 @@ namespace EasyDebug.CommandLine
             {
                 Submit();
             }
-
-            inputField.Select();
         }
 
         public void OnInputChanged()

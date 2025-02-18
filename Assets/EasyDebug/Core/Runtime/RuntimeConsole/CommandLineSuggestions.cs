@@ -14,7 +14,7 @@ namespace EasyDebug.CommandLine
         public Pool<Button> buttons = new(x => x.gameObject.activeSelf);
         public event System.Action onSuggestionAcceptedEvent;
 
-        void Start()
+        public void Init()
         {
             buttons.createFunc = () =>
             {

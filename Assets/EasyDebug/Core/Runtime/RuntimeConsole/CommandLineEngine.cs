@@ -16,7 +16,7 @@ namespace EasyDebug.CommandLine
         public List<MethodInfo> methods = new List<MethodInfo>();
         public List<Command> commands = new List<Command>();
 
-        public Dictionary<Command, Type> command2script = new();
+        public Dictionary<Command, Type> command2script;
 
         public void Init()
         {
@@ -28,23 +28,28 @@ namespace EasyDebug.CommandLine
 
             commands = methods.SelectMany(m => m.GetCustomAttributes<Command>()).ToList();
 
+            command2script = new Dictionary<Command, Type>();
+
             var types = Assembly.GetExecutingAssembly()
                 .GetTypes();
             foreach (var type in types)
             {
-                foreach (var m in type.GetMethods(access).Where(mi => mi.GetCustomAttributes<Command>().Any()))
+                foreach (var m in type.GetMethods(access).Where(mi => mi.GetCustomAttribute<Command>() != null))
                 {
-                    //Debug.Log($"------ {m.GetCustomAttribute<Command>().GetHashCode()} {m.GetCustomAttribute<Command>().Serialize()} {type}");
-                    command2script.Add(m.GetCustomAttribute<Command>(), type);
+                    try
+                    {
+                        command2script.Add(m.GetCustomAttribute<Command>(), type);
+                    }
+                    catch (Exception e)
+                    {
+                        PipeConsole.Print(m.GetCustomAttribute<Command>().functionName, " is doubled! skipping");
+                    }
                 }
             }
-
-            //Debug.Log("Found " + methods.Count + " commands available:");
 
             foreach (var method in methods)
             {
                 var attr = method.GetCustomAttribute<Command>();
-                //Debug.Log("Found command: " + method.Name + " with return type = " + method.ReturnType + "; Attribute name is " + attr.functionName + " of length = " + attr.functionName.Length);
             }
         }
 
