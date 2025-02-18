@@ -7,7 +7,23 @@ namespace EasyDebug
 {
     public class EasyDebugWindow : EditorWindow
     {
-        private int tab = 0;
+        private int _tab = 0;
+        private int tab
+        {
+            get
+            {
+                return _tab;
+            }
+            set
+            {
+                if (_tab != value)
+                {
+                    onTabChangedEvent?.Invoke();
+                }
+                _tab = value;
+            }
+        }
+        public event System.Action onTabChangedEvent;
         private string[] tabs = new string[] { "General", "CommandLine", "Prompts", "PipeConsole", "Serializer" };
         private static Color bgdefault;
         private static string version = "3.0.1 alpha";
@@ -38,6 +54,11 @@ namespace EasyDebug
         {
             bgdefault = GUI.backgroundColor;
             EditorWindow.GetWindow<EasyDebugWindow>();
+        }
+
+        private void OnTabChanged()
+        {
+            scroll = Vector2.zero;
         }
 
         private void DrawTab_General()
@@ -74,10 +95,13 @@ namespace EasyDebug
 
             GUILayout.Space(25);
             GUILayout.Label("All found commands:");
+
+            scroll = GUILayout.BeginScrollView(scroll);
             for (int i = 0; i < CommandLine.CommandLine.instance?.engine?.commands.Count; i++)
             {
                 GUILayout.Label($"{i}: {CommandLine.CommandLine.instance.engine.commands[i].Serialize()}");
             }
+            GUILayout.EndScrollView();
         }
 
         private void DrawTab_Prompts()
@@ -188,8 +212,13 @@ namespace EasyDebug
 
         private void OnGUI()
         {
-            tab = GUILayout.Toolbar(tab, tabs);
-            switch (tab)
+            int newtab = GUILayout.Toolbar(tab, tabs);
+            if (newtab != tab)
+            {
+                OnTabChanged();
+            }
+            tab = newtab;
+            switch (newtab)
             {
                 case 0:
                     DrawTab_General();
