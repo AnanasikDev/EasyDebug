@@ -146,7 +146,7 @@ namespace EasyDebug.CommandLine
                 object[] args = new object[stringArgs.Length];
                 for (int a = 0; a < stringArgs.Length; a++)
                 {
-                    args[a] = Convert.ChangeType(stringArgs[a], argTypes[a].ParameterType);
+                    args[a] = ArgumentParser.ParseArgument(argTypes[a].ParameterType, stringArgs[a]); //Convert.ChangeType(stringArgs[a], argTypes[a].ParameterType);
                 }
 
                 TryInvokeMethodOnGameObject(gameObject, methodInfo, args);
@@ -257,6 +257,24 @@ namespace EasyDebug.CommandLine
             return names;
         }
 
+        public CommandLine.Status GetQueryStatus(ParsedCommand parsedCommand, string query)
+        {
+            // funciton name is being typed in -> object is already typed
+            if (parsedCommand.functionName.Length > 0)
+            {
+                int argsIndex = parsedCommand.objectName.Length + 1 + parsedCommand.functionName.Length;
+                if (query.Length > argsIndex && query[argsIndex] == ' ') // function is finished, typing in arguments
+                {
+                    return CommandLine.Status.EnteringArguments;
+                }
+                return CommandLine.Status.EnteringFunctionName;
+            }
+            else
+            {
+                return CommandLine.Status.EnteringObjectName;
+            }
+        }
+
         /// <summary>
         /// Format of a query must be as following (objectName.functionName arg1; arg2; arg...)
         /// objectName can be omitted if command is declared as global (.functionName arg1; arg2; arg...)
@@ -288,10 +306,6 @@ namespace EasyDebug.CommandLine
                 {
                     string[] args = query.Substring(argsIndex).Replace(" ", "").Split(";");
                     result.args = args;
-                    for (int a = 0; a < args.Length; a++)
-                    {
-                        Debug.Log($"Arg {a}: {args[a]}");
-                    }
                 }
             }
 
@@ -303,7 +317,6 @@ namespace EasyDebug.CommandLine
             ParsedCommand parsedCommand = ParseInput(query);
             if (parsedCommand == ParsedCommand.Empty)
             {
-                //Debug.LogError("Command Line Query parse failed");
                 return;
             }
 
@@ -311,7 +324,6 @@ namespace EasyDebug.CommandLine
             
             if (index == -1)
             {
-                //Debug.LogError($"Command with name {commandInfo.functionName} could not be found");
                 return;
             }
 
@@ -354,7 +366,6 @@ namespace EasyDebug.CommandLine
             GameObject obj = GameObject.Find(objectName);
             if (obj == null)
             {
-                //Debug.LogError($"Object with name {commandInfo.objectName} not found on the current scene");
                 return;
             }
 

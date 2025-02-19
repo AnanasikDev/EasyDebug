@@ -13,6 +13,12 @@ public class MainExample : MonoBehaviour
         Debug.Log($"ARGUMENTED FUNCTION: float arg1 = {arg1}; int arg2 = {arg2}");
     }
 
+    [Command("translate", ConsoleCommandType.ObjectRelative)]
+    public void Translate(Vector3 delta)
+    {
+        transform.position += delta;
+    }
+
     [Command("command_2", ConsoleCommandType.Global)]
     public void MyCustomCommand12()
     {

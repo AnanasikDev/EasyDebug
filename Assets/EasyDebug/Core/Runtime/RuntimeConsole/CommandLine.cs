@@ -23,10 +23,7 @@ namespace EasyDebug.CommandLine
             get
             {
                 var parsed = engine.ParseInput(inputField.text);
-                if (!parsed.containsSeparator)
-                    return Status.EnteringObjectName;
-                else
-                    return Status.EnteringFunctionName;
+                return engine.GetQueryStatus(parsed, inputField.text);
             }
         }
 
