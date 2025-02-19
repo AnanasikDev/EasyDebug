@@ -4,6 +4,7 @@ using System.Linq;
 using System;
 using System.Reflection;
 using UnityEditor;
+using UnityEngine;
 
 namespace EasyDebug
 {
@@ -101,6 +102,16 @@ namespace EasyDebug
         public PipeConsoleEntity Colorify(string color)
         {
             this.value = $"<color={color}>{value}</color>";
+            return this;
+        }
+
+        /// <summary>
+        /// Wraps Entity's value with <color> tag
+        /// </summary>
+        public PipeConsoleEntity Colorify(UnityEngine.Color color)
+        {
+            string hex = ColorUtility.ToHtmlStringRGB(color);
+            this.value = $"<color=#{hex}>{value}</color>";
             return this;
         }
 

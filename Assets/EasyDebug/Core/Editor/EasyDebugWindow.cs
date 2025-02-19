@@ -144,8 +144,6 @@ namespace EasyDebug
 
         private void DrawTab_ObjectSerializer()
         {
-            scroll = GUILayout.BeginScrollView(scroll);
-
             serializer.obj = (GameObject)EditorGUILayout.ObjectField("", serializer.obj, typeof(GameObject), true);
 
             serializer.allAssemblies = GUILayout.Toggle(serializer.allAssemblies, "All assemblies");
@@ -185,9 +183,18 @@ namespace EasyDebug
                 }
             }
 
+            scroll = GUILayout.BeginScrollView(scroll);
+
             if (serializer.obj != null)
             {
-                GUILayout.Label(serializer.Serialize(), new GUIStyle { richText = true });
+                try
+                {
+                    GUILayout.Label(serializer.Serialize(), new GUIStyle { richText = true });
+                }
+                catch (System.Exception e)
+                {
+                    GUILayout.Label("CRITICAL ERROR: " + e.Message);
+                }
             }
 
             GUILayout.EndScrollView();

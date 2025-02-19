@@ -1,10 +1,30 @@
 ﻿using UnityEngine;
 using EasyDebug.CommandLine;
+using System.Collections.Generic;
+using System;
 
 public class MainExample : MonoBehaviour
 {
+    public Dictionary<int, string> mydict = new Dictionary<int, string>()
+    {
+        { 1, "hello" },
+        { 2, "hola" },
+        { 3, "привет" },
+    };
+
+    public A[] aas = new A[4]
+    {
+        new A(1, "furries", 9.123f),
+        new A(0, "are", -9.0f),
+        new A(-1231231, "best", 3.3333333f),
+        new A(222, "!!!", 0)
+    };
+
+    public Color color = new Color(0.4f, 1.0f, 0.9f, 1.0f);
+
     private void Start()
     {
+        var v = aas[0];
     }
 
     [Command("funwithargs", ConsoleCommandType.Global)]
@@ -104,10 +124,17 @@ public class MainExample : MonoBehaviour
     }
 }
 
+[Serializable]
 public class A
 {
-    public override string ToString()
+    public int myint;
+    public string mystring;
+    public float myfloat;
+
+    public A(int _int, string _string, float _float)
     {
-        return "[A: ooo]";
+        myint = _int;
+        mystring = _string;
+        myfloat = _float;
     }
 }

@@ -1,4 +1,6 @@
-﻿using System;
+﻿using EasyDebug;
+using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Text;
@@ -17,13 +19,24 @@ internal class ObjectSerializer
     public bool showProperties = true;
     public bool showFields = true;
 
+    private int maxDepth = 3;
+
     public List<AssemblyDefinitionAsset> includedAssemblyDefinitions = new List<AssemblyDefinitionAsset>();
     private HashSet<string> includedAssemblyNames = new HashSet<string>();
 
     public ObjectSerializer()
     {
         instance = this;
-        RefreshAssemblyList();    }
+        RefreshAssemblyList();    
+    }
+
+    public BindingFlags GetBindingFlags()
+    {
+        BindingFlags access = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance;
+        if (showStatic) access = access | BindingFlags.Static;
+
+        return access;
+    }
 
     public void RefreshAssemblyList()
     {
@@ -48,8 +61,7 @@ internal class ObjectSerializer
 
         StringBuilder sb = new StringBuilder();
 
-        BindingFlags access = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance;
-        if (showStatic) access = access | BindingFlags.Static;
+        BindingFlags access = GetBindingFlags();
 
         Type type = onlyScripts ? typeof(MonoBehaviour) : typeof(Component);
 
@@ -93,29 +105,138 @@ internal class ObjectSerializer
 
     private string FormatTypeName(Type type)
     {
+        if (type.IsArray)
+            return FormatTypeName(type.GetElementType()) + "[]";
+
+        if (type.IsGenericType)
+        {
+            Type genericType = type.GetGenericTypeDefinition();
+            Type[] genericArgs = type.GetGenericArguments();
+
+            if (genericType == typeof(List<>))
+                return $"List<{FormatTypeName(genericArgs[0])}>";
+            if (genericType == typeof(Dictionary<,>))
+                return $"Dictionary<{FormatTypeName(genericArgs[0])}, {FormatTypeName(genericArgs[1])}>";
+        }
+
         return type switch
         {
             _ when type == typeof(int) => "int",
             _ when type == typeof(float) => "float",
             _ when type == typeof(bool) => "bool",
             _ when type == typeof(string) => "string",
+            _ when type == typeof(byte) => "byte",
+            _ when type == typeof(sbyte) => "sbyte",
+            _ when type == typeof(short) => "short",
+            _ when type == typeof(ushort) => "ushort",
+            _ when type == typeof(long) => "long",
+            _ when type == typeof(ulong) => "ulong",
+            _ when type == typeof(double) => "double",
+            _ when type == typeof(decimal) => "decimal",
+            _ when type == typeof(uint) => "uint",
             _ when type == typeof(Vector3) => "Vector3",
             _ when type == typeof(Vector2) => "Vector2",
+            _ when type == typeof(Vector4) => "Vector4",
+            _ when type == typeof(Quaternion) => "Quaternion",
+            _ when type == typeof(Color) => "Color",
             _ when type == typeof(GameObject) => "GameObject",
+            _ when type == typeof(Transform) => "Transform",
+            _ when type == typeof(Rect) => "Rect",
             _ => type.Name
         };
     }
 
-    private string FormatValue(object value)
+    private string FormatValue(object value, int depthi = 0)
     {
+        depthi++;
+        if (depthi > maxDepth) return "MAXLIMIT";
+
+        if (value == null)
+            return "null";
+
+        Type type = value.GetType();
+
+        if (type == typeof(string))
+        {
+            return value.ToString();
+        }
+
+        // Handle arrays
+        if (type.IsArray)
+        {
+            var array = (IEnumerable)value;
+            return "[" + string.Join(", ", FormatEnumerable(array)) + "]";
+        }
+
+        // Handle generic lists
+        if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(List<>))
+        {
+            var list = (IEnumerable)value;
+            return "[" + string.Join(", ", FormatEnumerable(list)) + "]";
+        }
+
+        // Handle generic dictionaries
+        if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Dictionary<,>))
+        {
+            var dict = (IDictionary)value;
+            List<string> entries = new();
+            foreach (DictionaryEntry entry in dict)
+            {
+                entries.Add($"{FormatValue(entry.Key)}: {FormatValue(entry.Value)}");
+            }
+            return "{" + string.Join(", ", entries) + "}";
+        }
+
+        // Handle custom serializable classes
+        if (type.IsClass && type.GetCustomAttribute(typeof(SerializableAttribute)) != null)
+        {
+            return SerializeObject(value);
+        }
+
+        // Handle standard types
         return value switch
         {
-            null => "null",
             bool b => b ? "true" : "false",
             float f => f.ToString("F3"),
+            double d => d.ToString("F3"),
             Vector3 v => $"({v.x:F2}, {v.y:F2}, {v.z:F2})",
             Vector2 v => $"({v.x:F2}, {v.y:F2})",
+            Vector4 v => $"({v.x:F2}, {v.y:F2}, {v.z:F2}, {v.w:F2})",
+            Quaternion q => $"({q.x:F2}, {q.y:F2}, {q.z:F2}, {q.w:F2})",
+            Color c => PipeConsole.Commit("■").Parse().Colorify(c).value + $"RGBA({c.r:F2}, {c.g:F2}, {c.b:F2}, {c.a:F2})",
             _ => value.ToString()
         };
+    }
+
+    // Helper function to format collections (arrays/lists)
+    private IEnumerable<string> FormatEnumerable(IEnumerable collection)
+    {
+        foreach (var item in collection)
+        {
+            yield return FormatValue(item);
+        }
+    }
+
+    // Serialize custom serializable objects
+    private string SerializeObject(object obj)
+    {
+        Type type = obj.GetType();
+        List<string> vals = new();
+
+        BindingFlags access = GetBindingFlags();
+
+        foreach (FieldInfo field in type.GetFields(access))
+        {
+            object fieldValue = field.GetValue(obj);
+            vals.Add($"{field.Name}: {FormatValue(fieldValue)}");
+        }
+
+        foreach (PropertyInfo prop in type.GetProperties(access))
+        {
+            object propValue = prop.GetValue(obj);
+            vals.Add($"{prop.Name}: {FormatValue(propValue)}");
+        }
+
+        return $"{type.Name}{{" + string.Join(", ", vals) + "}}";
     }
 }
