@@ -7,10 +7,10 @@ public class MainExample : MonoBehaviour
     {
     }
 
-    [Command("command_uno", ConsoleCommandType.Global)]
-    public void MyCustomCommand1()
+    [Command("funwithargs", ConsoleCommandType.Global)]
+    public void MyCustomCommand1(float arg1, int arg2 = 0)
     {
-        Debug.Log("Heh that's my first custom runtime console command:D");
+        Debug.Log($"ARGUMENTED FUNCTION: float arg1 = {arg1}; int arg2 = {arg2}");
     }
 
     [Command("command_2", ConsoleCommandType.Global)]

@@ -116,7 +116,7 @@ namespace EasyDebug.CommandLine
         /// <summary>
         /// Searches for a component on the GameObject with the specified method and invokes it if found.
         /// </summary>
-        public void TryInvokeMethodOnGameObject(GameObject gameObject, MethodInfo methodInfo)
+        public void TryInvokeMethodOnGameObject(GameObject gameObject, MethodInfo methodInfo, object[] args)
         {
             // Get the name of the method we are looking for
             string methodName = methodInfo.Name;
@@ -129,13 +129,32 @@ namespace EasyDebug.CommandLine
                 if (componentMethod != null && componentMethod == methodInfo)
                 {
                     // Invoke the method on the component
-                    componentMethod.Invoke(component, null); // Pass parameters here if required
+                    componentMethod.Invoke(component, args); // Pass parameters here if required
                     Debug.Log($"Method '{methodName}' invoked on component '{component.GetType().Name}' attached to '{gameObject.name}'");
                     return;
                 }
             }
 
             Debug.LogWarning($"No component with method '{methodName}' found on GameObject '{gameObject.name}'");
+        }
+
+        public void TryInvokeMethodWithArguments(GameObject gameObject, MethodInfo methodInfo, string[] stringArgs)
+        {
+            try
+            {
+                ParameterInfo[] argTypes = methodInfo.GetParameters();
+                object[] args = new object[stringArgs.Length];
+                for (int a = 0; a < stringArgs.Length; a++)
+                {
+                    args[a] = Convert.ChangeType(stringArgs[a], argTypes[a].ParameterType);
+                }
+
+                TryInvokeMethodOnGameObject(gameObject, methodInfo, args);
+            }
+            catch (Exception e)
+            {
+                Debug.LogWarning(e);
+            }
         }
 
         /// <summary>
@@ -239,15 +258,15 @@ namespace EasyDebug.CommandLine
         }
 
         /// <summary>
-        /// Format of a query must be as following (objectName.functionName arg1 arg2 arg...)
-        /// objectName can be omitted if command is declared as global (.functionName arg1 arg2 arg...)
+        /// Format of a query must be as following (objectName.functionName arg1; arg2; arg...)
+        /// objectName can be omitted if command is declared as global (.functionName arg1; arg2; arg...)
         /// args are optional in any case.
         /// </summary>
         /// <param name="query">Completed or non-completed input query from the command line</param>
         /// <returns>Deformatted string into a temporary CommandInfo without connection to real commands</returns>
         internal ParsedCommand ParseInput(string query)
         {
-            query = query.Trim();
+            query = query.TrimStart();
             if (query == string.Empty) return ParsedCommand.Empty;
             ParsedCommand result = new ParsedCommand();
             if (query.Contains('.') == false)
@@ -261,6 +280,20 @@ namespace EasyDebug.CommandLine
             result.objectName = query.Split('.')[0];
             result.functionName = result.objectName == string.Empty ? query.Split(" ")[0] : query.Split(".")[1].Split(" ")[0];
             result.functionName = result.functionName.Replace(".", "").Replace(" ", "");
+
+            if (result.functionName.Length > 0)
+            {
+                int argsIndex = result.objectName.Length + 1 + result.functionName.Length;
+                if (query.Length > argsIndex && query[argsIndex] == ' ') // function is written
+                {
+                    string[] args = query.Substring(argsIndex).Replace(" ", "").Split(";");
+                    result.args = args;
+                    for (int a = 0; a < args.Length; a++)
+                    {
+                        Debug.Log($"Arg {a}: {args[a]}");
+                    }
+                }
+            }
 
             return result;
         }
@@ -294,7 +327,7 @@ namespace EasyDebug.CommandLine
                         var gameobjects = FindGameobjectsByCommand(commands[i]);
                         foreach (var go in gameobjects)
                         {
-                            TryInvokeMethodOnGameObject(go, methods[i]);
+                            TryInvokeMethodWithArguments(go, methods[i], parsedCommand.args);
                         }
                         return;
                     }
@@ -310,7 +343,7 @@ namespace EasyDebug.CommandLine
                         var gameobjects = FindGameobjectsByCommand(commands[i]);
                         foreach (var go in gameobjects)
                         {
-                            TryInvokeMethodOnGameObject(go, methods[i]);
+                            TryInvokeMethodWithArguments(go, methods[i], parsedCommand.args);
                         }
                         return;
                     }
@@ -325,7 +358,7 @@ namespace EasyDebug.CommandLine
                 return;
             }
 
-            TryInvokeMethodOnGameObject(obj, method);
+            TryInvokeMethodWithArguments(obj, method, parsedCommand.args);
         }
     }
 }

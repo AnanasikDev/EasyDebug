@@ -22,7 +22,7 @@ namespace EasyDebug.CommandLine
         /// <summary>
         /// Arguments passed through to the command
         /// </summary>
-        public object[] args;
+        public string[] args;
 
         public bool containsSeparator = false;
 
@@ -43,7 +43,10 @@ namespace EasyDebug.CommandLine
 
         public static bool operator ==(ParsedCommand a, ParsedCommand b)
         {
-            return a.objectName == b.objectName && a.functionName == b.functionName && (a.args == null || b.args == null || a.args.SequenceEqual(b.args));
+            return a.objectName == b.objectName && 
+                a.functionName == b.functionName && 
+                ((a.args == null && b.args == null) || 
+                (a.args != null && b.args != null && a.args.SequenceEqual(b.args)));
         }
         public static bool operator !=(ParsedCommand a, ParsedCommand b)
         {
@@ -51,7 +54,7 @@ namespace EasyDebug.CommandLine
         }
         public string Serialize()
         {
-            return $"{objectName}.{functionName}".Trim(); //{PipeConsole.Commit(args).Parse(Parser.Harsh).Print()}
+            return $"{objectName}.{functionName}".Trim();
         }
     }
 }
