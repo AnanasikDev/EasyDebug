@@ -130,7 +130,6 @@ namespace EasyDebug.CommandLine
                 {
                     // Invoke the method on the component
                     componentMethod.Invoke(component, args); // Pass parameters here if required
-                    Debug.Log($"Method '{methodName}' invoked on component '{component.GetType().Name}' attached to '{gameObject.name}'");
                     return;
                 }
             }
@@ -138,16 +137,25 @@ namespace EasyDebug.CommandLine
             Debug.LogWarning($"No component with method '{methodName}' found on GameObject '{gameObject.name}'");
         }
 
-        public void TryInvokeMethodWithArguments(GameObject gameObject, MethodInfo methodInfo, string[] stringArgs)
+        public void TryInvokeMethodWithRawArguments(GameObject gameObject, MethodInfo methodInfo, string[] stringArgs)
         {
             try
             {
+                if (stringArgs == null || stringArgs.Length == 0)
+                {
+                    TryInvokeMethodOnGameObject(gameObject, methodInfo, null);
+                    return;
+                }
+
                 ParameterInfo[] argTypes = methodInfo.GetParameters();
                 object[] args = new object[stringArgs.Length];
-                for (int a = 0; a < stringArgs.Length; a++)
+                if (argTypes != null)
+                for (int a = 0; a < argTypes.Length; a++)
                 {
-                    args[a] = ArgumentParser.ParseArgument(argTypes[a].ParameterType, stringArgs[a]); //Convert.ChangeType(stringArgs[a], argTypes[a].ParameterType);
+                    args[a] = ArgumentParser.ParseArgument(argTypes[a].ParameterType, stringArgs[a]);
                 }
+
+                //if (args != null && args.Length == 0) args = null;
 
                 TryInvokeMethodOnGameObject(gameObject, methodInfo, args);
             }
@@ -259,8 +267,11 @@ namespace EasyDebug.CommandLine
 
         public CommandLine.Status GetQueryStatus(ParsedCommand parsedCommand, string query)
         {
+            if (query.Length == 0) return CommandLine.Status.EnteringObjectName;
+            if (query[0] == '.') return CommandLine.Status.EnteringFunctionName;
+
             // funciton name is being typed in -> object is already typed
-            if (parsedCommand.functionName.Length > 0)
+            if (parsedCommand.functionName.Length > 0 || query[query.Length - 1] == '.')
             {
                 int argsIndex = parsedCommand.objectName.Length + 1 + parsedCommand.functionName.Length;
                 if (query.Length > argsIndex && query[argsIndex] == ' ') // function is finished, typing in arguments
@@ -328,6 +339,7 @@ namespace EasyDebug.CommandLine
             }
 
             string objectName = parsedCommand.objectName;
+            List<GameObject> targets = new List<GameObject>();
             
             if (parsedCommand.objectName == string.Empty)
             {
@@ -337,11 +349,7 @@ namespace EasyDebug.CommandLine
                     if (commands[i].accessType == ConsoleCommandType.Global && commands[i].functionName == parsedCommand.functionName)
                     {
                         var gameobjects = FindGameobjectsByCommand(commands[i]);
-                        foreach (var go in gameobjects)
-                        {
-                            TryInvokeMethodWithArguments(go, methods[i], parsedCommand.args);
-                        }
-                        return;
+                        targets.Union(gameobjects);
                     }
                 }
             }
@@ -353,11 +361,7 @@ namespace EasyDebug.CommandLine
                     if (commands[i].objectAlias == parsedCommand.objectName && commands[i].accessType == ConsoleCommandType.ObjectRelative && commands[i].functionName == parsedCommand.functionName)
                     {
                         var gameobjects = FindGameobjectsByCommand(commands[i]);
-                        foreach (var go in gameobjects)
-                        {
-                            TryInvokeMethodWithArguments(go, methods[i], parsedCommand.args);
-                        }
-                        return;
+                        targets.Union(gameobjects);
                     }
                 }
             }
@@ -368,8 +372,12 @@ namespace EasyDebug.CommandLine
             {
                 return;
             }
+            targets.Add(obj);
 
-            TryInvokeMethodWithArguments(obj, method, parsedCommand.args);
+            foreach(GameObject go in targets)
+            {
+                TryInvokeMethodWithRawArguments(obj, method, parsedCommand.args);
+            }
         }
     }
 }

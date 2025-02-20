@@ -20,7 +20,7 @@ namespace EasyDebug.CommandLine
         public string functionName = "";
 
         /// <summary>
-        /// Arguments passed through to the command
+        /// Arguments passed through to the command. Be careful - it can be null.
         /// </summary>
         public string[] args;
 

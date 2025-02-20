@@ -1,4 +1,3 @@
-using System.Linq;
 using TMPro;
 using UnityEngine;
 
@@ -9,7 +8,7 @@ namespace EasyDebug.CommandLine
         internal const float height = 30;
 
         internal Canvas canvas;
-        internal GameObject handler;
+        [SerializeField] private GameObject[] objects;
         public static CommandLine instance;
         public bool isActive { get; private set; } = false;
 
@@ -98,6 +97,11 @@ namespace EasyDebug.CommandLine
                 Toggle();
             }
 
+            if (inputField.isFocused && Input.GetKeyDown(KeyCode.Escape))
+            {
+                inputField.ReleaseSelection();
+            }
+
             if (inputField.text != string.Empty && Input.GetKeyDown(KeyCode.Return))
             {
                 Submit();
@@ -137,14 +141,16 @@ namespace EasyDebug.CommandLine
         public void Show()
         {
             isActive = true;
-            gameObject.SetActive(true);
+            foreach (var go in objects)
+                go.SetActive(true);
             inputField.Select();
         }
 
         public void Hide()
         {
             isActive = false;
-            gameObject.SetActive(false);
+            foreach (var go in objects)
+                go.SetActive(false);
         }
 
         public enum Status
