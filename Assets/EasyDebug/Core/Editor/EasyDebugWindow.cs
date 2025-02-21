@@ -26,7 +26,7 @@ namespace EasyDebug
         public event System.Action onTabChangedEvent;
         private string[] tabs = new string[] { "General", "CommandLine", "Prompts", "PipeConsole", "Serializer" };
         private static Color bgdefault;
-        private static string version = "3.0.1 alpha";
+        private static string version = "3.1.0";
         private Vector2 scroll;
 
         private bool _alwaysUpdate = true;
