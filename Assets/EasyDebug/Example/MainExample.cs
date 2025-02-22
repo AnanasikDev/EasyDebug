@@ -5,6 +5,8 @@ using System;
 
 public class MainExample : MonoBehaviour
 {
+    private A a = new A(1, "ohohoh", 23);
+
     public Dictionary<int, string> mydict = new Dictionary<int, string>()
     {
         { 1, "hello" },
@@ -25,6 +27,11 @@ public class MainExample : MonoBehaviour
     private void Start()
     {
         var v = aas[0];
+    }
+
+    private void Update()
+    {
+        DrawArrow.ForGizmo(transform.position, Vector3.up);
     }
 
     [Command("funwithargs", ConsoleCommandType.Global)]

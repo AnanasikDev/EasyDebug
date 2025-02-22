@@ -151,6 +151,14 @@ namespace EasyDebug
             serializer.showStatic = GUILayout.Toggle(serializer.showStatic, "Show static");
             serializer.showFields = GUILayout.Toggle(serializer.showFields, "Show fields");
             serializer.showProperties = GUILayout.Toggle(serializer.showProperties, "Show properties");
+            serializer.collection_forceNewLine = GUILayout.Toggle(serializer.collection_forceNewLine, "Collection force new line");
+
+            serializer.unfoldSerializable = GUILayout.Toggle(serializer.unfoldSerializable, "UnfoldSerializable");
+            if (serializer.unfoldSerializable)
+                serializer.serializable_forceNewLine = GUILayout.Toggle(serializer.serializable_forceNewLine, "Serializable force new line");
+            
+            serializer.collection_maxLimit = EditorGUILayout.IntField("Collection max limit", serializer.collection_maxLimit);
+
 
             if (!serializer.allAssemblies)
             {

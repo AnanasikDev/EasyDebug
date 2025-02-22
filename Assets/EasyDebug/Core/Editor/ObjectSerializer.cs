@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Text;
 using UnityEditorInternal;
 using UnityEngine;
+using System.Linq;
 
 [Serializable]
 internal class ObjectSerializer
@@ -18,6 +19,10 @@ internal class ObjectSerializer
     public bool showStatic = false;
     public bool showProperties = true;
     public bool showFields = true;
+    public bool serializable_forceNewLine = true;
+    public bool collection_forceNewLine = true;
+    public int collection_maxLimit = 30;
+    public bool unfoldSerializable = true;
 
     private int maxDepth = 3;
 
@@ -55,6 +60,13 @@ internal class ObjectSerializer
         }
     }
 
+    public string SerializeUnit(string typeName, string name, string value, bool isStatic)
+    {
+        string prefix = isStatic ? "<color=#EEEEEF>static</color> " : "";
+
+        return prefix + $"<color=#00FF00>{typeName}</color> <color=#87CEFA>{name}</color><color=#EEEEEE>:</color> <color=#FFD700>{value}</color>";
+    }
+
     public string Serialize()
     {
         if (obj == null) return "No object selected.";
@@ -76,9 +88,7 @@ internal class ObjectSerializer
                 string fieldName = field.Name;
                 string fieldValue = FormatValue(field.GetValue(script));
 
-                string prefix = field.IsStatic ? "<color=#EEEEEF>static</color> " : "";
-
-                sb.AppendLine(prefix + $"<color=#00FF00>{typeName}</color> <color=#87CEFA>{fieldName}</color><color=#EEEEEE>:</color> <color=#FFD700>{fieldValue}</color>");
+                sb.AppendLine(SerializeUnit(typeName, fieldName, fieldValue, field.IsStatic));
             }
 
             if (showProperties) foreach (var prop in script.GetType().GetProperties(access))
@@ -162,17 +172,10 @@ internal class ObjectSerializer
         }
 
         // Handle arrays
-        if (type.IsArray)
+        if (type.IsArray || (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(List<>)))
         {
-            var array = (IEnumerable)value;
-            return "[" + string.Join(", ", FormatEnumerable(array)) + "]";
-        }
-
-        // Handle generic lists
-        if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(List<>))
-        {
-            var list = (IEnumerable)value;
-            return "[" + string.Join(", ", FormatEnumerable(list)) + "]";
+            var collection = (IEnumerable)value;
+            return $"({GetLength(collection)} elements)[" + (collection_forceNewLine ? "\n" : "") + string.Join((collection_forceNewLine ? ",\n" : ", "), FormatEnumerable(collection)) + (collection_forceNewLine ? "\n" : "") + "]";
         }
 
         // Handle generic dictionaries
@@ -180,11 +183,18 @@ internal class ObjectSerializer
         {
             var dict = (IDictionary)value;
             List<string> entries = new();
+            int i = 0;
             foreach (DictionaryEntry entry in dict)
             {
+                if (i >= collection_maxLimit)
+                {
+                    entries.Add($"... ({collection_maxLimit} shown, {dict.Count - collection_maxLimit} hidden)");
+                    break;
+                }
+                i++;
                 entries.Add($"{FormatValue(entry.Key)}: {FormatValue(entry.Value)}");
             }
-            return "{" + string.Join(", ", entries) + "}";
+            return $"({GetLength(dict)} elements){{" + (collection_forceNewLine ? "\n" : "") + string.Join((collection_forceNewLine ? ",\n" : ", "), entries) + (collection_forceNewLine ? "\n" : "") + "}";
         }
 
         // Handle custom serializable classes
@@ -211,8 +221,15 @@ internal class ObjectSerializer
     // Helper function to format collections (arrays/lists)
     private IEnumerable<string> FormatEnumerable(IEnumerable collection)
     {
+        int i = 0;
         foreach (var item in collection)
         {
+            i++;
+            if (i > collection_maxLimit)
+            {
+                yield return $"... ({collection_maxLimit} shown, {GetLength(collection) - collection_maxLimit} hidden)";
+                yield break;
+            }
             yield return FormatValue(item);
         }
     }
@@ -220,8 +237,12 @@ internal class ObjectSerializer
     // Serialize custom serializable objects
     private string SerializeObject(object obj)
     {
+        if (!unfoldSerializable) return obj.ToString();
+
         Type type = obj.GetType();
         List<string> vals = new();
+
+        string separator = serializable_forceNewLine ? ",\n" : ", ";
 
         BindingFlags access = GetBindingFlags();
 
@@ -237,6 +258,11 @@ internal class ObjectSerializer
             vals.Add($"{prop.Name}: {FormatValue(propValue)}");
         }
 
-        return $"{type.Name}{{" + string.Join(", ", vals) + "}}";
+        return $"{type.Name}{{" + string.Join(separator, vals) + "}}";
+    }
+
+    private int GetLength(IEnumerable collection)
+    {
+        return collection.Cast<object>().ToArray().Length;
     }
 }
