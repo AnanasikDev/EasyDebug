@@ -252,7 +252,7 @@ namespace EasyDebug
             serializer.unfoldCollections = GUILayout.Toggle(serializer.unfoldCollections, "Unfold collections", GUILayout.MaxWidth(optionWidth));
             if (serializer.unfoldCollections)
             {
-                serializer.collection_forceNewLine = GUILayout.Toggle(serializer.collection_forceNewLine, "Collection new line", GUILayout.MaxWidth(optionWidth));
+                serializer.collection_forceNewLine = GUILayout.Toggle(serializer.collection_forceNewLine, "Force new line", GUILayout.MaxWidth(optionWidth));
             } 
             EditorGUILayout.EndHorizontal();
 
@@ -260,11 +260,22 @@ namespace EasyDebug
             serializer.unfoldSerializable = GUILayout.Toggle(serializer.unfoldSerializable, "Unfold serializable", GUILayout.MaxWidth(optionWidth));
             if (serializer.unfoldSerializable)
             {
-                serializer.serializable_forceNewLine = GUILayout.Toggle(serializer.serializable_forceNewLine, "Serializable new line", GUILayout.MaxWidth(optionWidth));
+                serializer.serializable_forceNewLine = GUILayout.Toggle(serializer.serializable_forceNewLine, "Force new line", GUILayout.MaxWidth(optionWidth));
+
+                EditorGUILayout.BeginHorizontal();
+                EditorGUILayout.LabelField("Max limit", GUILayout.MaxWidth(60));
+                serializer.collection_maxLimit = EditorGUILayout.IntField(serializer.collection_maxLimit, GUILayout.MaxWidth(50));
+                if (GUILayout.Button("<", GUILayout.MaxHeight(16), GUILayout.MaxWidth(16)))
+                {
+                    serializer.collection_maxLimit = (serializer.collection_maxLimit == 0 ? 0 : serializer.collection_maxLimit - 1);
+                }
+                if (GUILayout.Button(">", GUILayout.MaxHeight(16), GUILayout.MaxWidth(16)))
+                {
+                    serializer.collection_maxLimit++;
+                }
+                EditorGUILayout.EndHorizontal();
             }
             EditorGUILayout.EndHorizontal();
-
-            serializer.collection_maxLimit = EditorGUILayout.IntField("Collection max limit", serializer.collection_maxLimit);
 
             Save();
 
