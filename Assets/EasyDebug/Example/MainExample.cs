@@ -31,7 +31,7 @@ public class MainExample : MonoBehaviour
 
     private void Update()
     {
-        DrawArrow.ForGizmo(transform.position, Vector3.up);
+        DrawArrow.ForDebug(transform.position, Vector3.up);
     }
 
     [Command("funwithargs", ConsoleCommandType.Global)]

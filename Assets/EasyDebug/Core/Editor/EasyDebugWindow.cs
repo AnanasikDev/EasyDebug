@@ -67,7 +67,34 @@ namespace EasyDebug
         public void SafeInit()
         {
             ThemeManager.SafeInit();
-            if (ThemeManager.currentTheme == null) ThemeManager.SetTheme(0);
+            ThemeManager.SetTheme(EditorPrefs.GetInt("themeIndex"));
+
+
+            TextPromptManager.ShowAll = EditorPrefs.GetBool("prompts_showAll");
+            serializer.allAssemblies = EditorPrefs.GetBool("serializer_allAssemblies");
+            serializer.onlyScripts = EditorPrefs.GetBool("serializer_onlyScripts");
+            serializer.showStatic = EditorPrefs.GetBool("serializer_showStatic");
+            serializer.showFields = EditorPrefs.GetBool("serializer_showFields");
+            serializer.collection_forceNewLine = EditorPrefs.GetBool("serializer_collection_forceNewLine");
+            serializer.unfoldSerializable = EditorPrefs.GetBool("serializer_unfoldSerializable");
+            serializer.serializable_forceNewLine = EditorPrefs.GetBool("serializer_serializable_forceNewLine");
+            serializer.collection_maxLimit = EditorPrefs.GetInt("serializer_collection_maxLimit");
+        }
+
+        private void OnEnable()
+        {
+            EditorApplication.update += ForceRepaint;
+            SafeInit();
+        }
+
+        private void OnDisable()
+        {
+            EditorApplication.update -= ForceRepaint;
+        }
+
+        private void ForceRepaint()
+        {
+            Repaint(); // Forces the editor window to update every frame
         }
 
         private void OnTabChanged()
@@ -93,6 +120,7 @@ namespace EasyDebug
             if (newIndex != ThemeManager.currentThemeIndex)
             {
                 ThemeManager.SetTheme(newIndex);
+                EditorPrefs.SetInt("themeIndex", newIndex);
             }
 
             EditorGUILayout.Space();
@@ -135,6 +163,7 @@ namespace EasyDebug
         {
             GUILayout.Label("Runtime gameobject prompts manager");
             TextPromptManager.ShowAll = GUILayout.Toggle(TextPromptManager.ShowAll, "Show all");
+            EditorPrefs.SetBool("prompts_showAll", TextPromptManager.ShowAll);
 
             GUILayout.BeginHorizontal();
 
@@ -186,6 +215,14 @@ namespace EasyDebug
             
             serializer.collection_maxLimit = EditorGUILayout.IntField("Collection max limit", serializer.collection_maxLimit);
 
+            EditorPrefs.SetBool("serializer_allAssemblies", serializer.allAssemblies);
+            EditorPrefs.SetBool("serializer_onlyScripts", serializer.onlyScripts);
+            EditorPrefs.SetBool("serializer_showStatic", serializer.showStatic);
+            EditorPrefs.SetBool("serializer_showFields", serializer.showFields);
+            EditorPrefs.SetBool("serializer_collection_forceNewLine", serializer.collection_forceNewLine);
+            EditorPrefs.SetBool("serializer_unfoldSerializable", serializer.unfoldSerializable);
+            EditorPrefs.SetBool("serializer_serializable_forceNewLine", serializer.serializable_forceNewLine);
+            EditorPrefs.SetInt("serializer_collection_maxLimit", serializer.collection_maxLimit);
 
             if (!serializer.allAssemblies)
             {
@@ -234,23 +271,6 @@ namespace EasyDebug
 
             GUILayout.EndScrollView();
         }
-
-
-        private void OnEnable()
-        {
-            EditorApplication.update += ForceRepaint;
-        }
-
-        private void OnDisable()
-        {
-            EditorApplication.update -= ForceRepaint;
-        }
-
-        private void ForceRepaint()
-        {
-            Repaint(); // Forces the editor window to update every frame
-        }
-
 
         private void OnGUI()
         {

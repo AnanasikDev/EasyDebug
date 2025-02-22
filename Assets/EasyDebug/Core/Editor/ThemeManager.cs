@@ -12,7 +12,8 @@ namespace EasyDebug
 
         public static void SafeInit()
         {
-            themes = GetThemes();
+            if (themes == null || themes.Count == 0)
+                themes = GetThemes();
         }
 
         public static bool SetTheme(string name)
