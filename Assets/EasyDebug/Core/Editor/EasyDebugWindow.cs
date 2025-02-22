@@ -68,17 +68,40 @@ namespace EasyDebug
         {
             ThemeManager.SafeInit();
             ThemeManager.SetTheme(EditorPrefs.GetInt("themeIndex"));
+            Load();
+        }
 
-
+        private void Load()
+        {
             TextPromptManager.ShowAll = EditorPrefs.GetBool("prompts_showAll");
+
             serializer.allAssemblies = EditorPrefs.GetBool("serializer_allAssemblies");
             serializer.onlyScripts = EditorPrefs.GetBool("serializer_onlyScripts");
+
             serializer.showStatic = EditorPrefs.GetBool("serializer_showStatic");
             serializer.showFields = EditorPrefs.GetBool("serializer_showFields");
+            serializer.showProperties = EditorPrefs.GetBool("serializer_showProperties");
+
+            serializer.unfoldCollections = EditorPrefs.GetBool("serializer_unfoldCollections");
             serializer.collection_forceNewLine = EditorPrefs.GetBool("serializer_collection_forceNewLine");
+
             serializer.unfoldSerializable = EditorPrefs.GetBool("serializer_unfoldSerializable");
             serializer.serializable_forceNewLine = EditorPrefs.GetBool("serializer_serializable_forceNewLine");
             serializer.collection_maxLimit = EditorPrefs.GetInt("serializer_collection_maxLimit");
+        }
+
+        private void Save()
+        {
+            EditorPrefs.SetBool("serializer_allAssemblies", serializer.allAssemblies);
+            EditorPrefs.SetBool("serializer_onlyScripts", serializer.onlyScripts);
+            EditorPrefs.SetBool("serializer_showStatic", serializer.showStatic);
+            EditorPrefs.SetBool("serializer_showFields", serializer.showFields);
+            EditorPrefs.SetBool("serializer_showProperties", serializer.showProperties);
+            EditorPrefs.SetBool("serializer_unfoldCollections", serializer.unfoldCollections);
+            EditorPrefs.SetBool("serializer_collection_forceNewLine", serializer.collection_forceNewLine);
+            EditorPrefs.SetBool("serializer_unfoldSerializable", serializer.unfoldSerializable);
+            EditorPrefs.SetBool("serializer_serializable_forceNewLine", serializer.serializable_forceNewLine);
+            EditorPrefs.SetInt("serializer_collection_maxLimit", serializer.collection_maxLimit);
         }
 
         private void OnEnable()
@@ -200,29 +223,50 @@ namespace EasyDebug
 
         private void DrawTab_ObjectSerializer()
         {
+            EditorGUILayout.BeginHorizontal();
             serializer.obj = (GameObject)EditorGUILayout.ObjectField("", serializer.obj, typeof(GameObject), true);
+            if (GUILayout.Button("S", GUILayout.MaxWidth(25)))
+            {
+                serializer.obj = Selection.activeGameObject;
+            }
+            if (GUILayout.Button("X", GUILayout.MaxWidth(25)))
+            {
+                serializer.obj = null;
+            }
+            EditorGUILayout.EndHorizontal();
 
-            serializer.allAssemblies = GUILayout.Toggle(serializer.allAssemblies, "All assemblies");
-            serializer.onlyScripts = GUILayout.Toggle(serializer.onlyScripts, "Only scripts");
-            serializer.showStatic = GUILayout.Toggle(serializer.showStatic, "Show static");
-            serializer.showFields = GUILayout.Toggle(serializer.showFields, "Show fields");
-            serializer.showProperties = GUILayout.Toggle(serializer.showProperties, "Show properties");
-            serializer.collection_forceNewLine = GUILayout.Toggle(serializer.collection_forceNewLine, "Collection force new line");
+            int optionWidth = 135;
 
-            serializer.unfoldSerializable = GUILayout.Toggle(serializer.unfoldSerializable, "UnfoldSerializable");
+            EditorGUILayout.BeginHorizontal();
+            serializer.allAssemblies = GUILayout.Toggle(serializer.allAssemblies, "All assemblies", GUILayout.MaxWidth(optionWidth));
+            serializer.onlyScripts = GUILayout.Toggle(serializer.onlyScripts, "Only scripts", GUILayout.MaxWidth(optionWidth));
+            EditorGUILayout.EndHorizontal();
+
+            EditorGUILayout.BeginHorizontal();
+            serializer.showStatic = GUILayout.Toggle(serializer.showStatic, "Show static", GUILayout.MaxWidth(optionWidth));
+            serializer.showFields = GUILayout.Toggle(serializer.showFields, "Show fields", GUILayout.MaxWidth(optionWidth));
+            serializer.showProperties = GUILayout.Toggle(serializer.showProperties, "Show properties", GUILayout.MaxWidth(optionWidth));
+            EditorGUILayout.EndHorizontal();
+
+            EditorGUILayout.BeginHorizontal();
+            serializer.unfoldCollections = GUILayout.Toggle(serializer.unfoldCollections, "Unfold collections", GUILayout.MaxWidth(optionWidth));
+            if (serializer.unfoldCollections)
+            {
+                serializer.collection_forceNewLine = GUILayout.Toggle(serializer.collection_forceNewLine, "Collection new line", GUILayout.MaxWidth(optionWidth));
+            } 
+            EditorGUILayout.EndHorizontal();
+
+            EditorGUILayout.BeginHorizontal();
+            serializer.unfoldSerializable = GUILayout.Toggle(serializer.unfoldSerializable, "Unfold serializable", GUILayout.MaxWidth(optionWidth));
             if (serializer.unfoldSerializable)
-                serializer.serializable_forceNewLine = GUILayout.Toggle(serializer.serializable_forceNewLine, "Serializable force new line");
-            
+            {
+                serializer.serializable_forceNewLine = GUILayout.Toggle(serializer.serializable_forceNewLine, "Serializable new line", GUILayout.MaxWidth(optionWidth));
+            }
+            EditorGUILayout.EndHorizontal();
+
             serializer.collection_maxLimit = EditorGUILayout.IntField("Collection max limit", serializer.collection_maxLimit);
 
-            EditorPrefs.SetBool("serializer_allAssemblies", serializer.allAssemblies);
-            EditorPrefs.SetBool("serializer_onlyScripts", serializer.onlyScripts);
-            EditorPrefs.SetBool("serializer_showStatic", serializer.showStatic);
-            EditorPrefs.SetBool("serializer_showFields", serializer.showFields);
-            EditorPrefs.SetBool("serializer_collection_forceNewLine", serializer.collection_forceNewLine);
-            EditorPrefs.SetBool("serializer_unfoldSerializable", serializer.unfoldSerializable);
-            EditorPrefs.SetBool("serializer_serializable_forceNewLine", serializer.serializable_forceNewLine);
-            EditorPrefs.SetInt("serializer_collection_maxLimit", serializer.collection_maxLimit);
+            Save();
 
             if (!serializer.allAssemblies)
             {
@@ -265,7 +309,7 @@ namespace EasyDebug
                 }
                 catch (System.Exception e)
                 {
-                    GUILayout.Label("CRITICAL ERROR: " + e.Message + "\n" + e.StackTrace.Substring(0, 1000));
+                    GUILayout.Label("CRITICAL ERROR: " + e.Message + "\n" + (e.StackTrace.Length > 1000 ? e.StackTrace.Substring(0, 1000) : e.StackTrace));
                 }
             }
 

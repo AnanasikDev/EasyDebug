@@ -7,9 +7,9 @@ using System.Text;
 using UnityEditorInternal;
 using UnityEngine;
 using System.Linq;
-using Codice.Client.Common;
+using TMPro;
+using UnityEngine.UI;
 
-[Serializable]
 internal class ObjectSerializer
 {
     public static ObjectSerializer instance;
@@ -17,18 +17,28 @@ internal class ObjectSerializer
 
     public bool onlyScripts = true;
     public bool allAssemblies = false;
+
     public bool showStatic = false;
     public bool showProperties = true;
     public bool showFields = true;
+
+    public bool unfoldSerializable = true;
     public bool serializable_forceNewLine = true;
+
+    public bool unfoldCollections = true;
     public bool collection_forceNewLine = true;
     public int collection_maxLimit = 30;
-    public bool unfoldSerializable = true;
 
     private int maxDepth = 3;
 
     public float windowWidth;
     private bool dynamicWidth = true;
+
+    public List<Type> deepSerializationBlacklist = new List<Type>()
+    {
+        typeof(TMP_FontAsset),
+        typeof(AnimationTriggers)
+    };
 
     public List<AssemblyDefinitionAsset> includedAssemblyDefinitions = new List<AssemblyDefinitionAsset>();
     private HashSet<string> includedAssemblyNames = new HashSet<string>();
@@ -88,9 +98,10 @@ internal class ObjectSerializer
         foreach (var script in obj.GetComponents(type))
         {
             if (!allAssemblies && !IsUserDefined(script.GetType())) continue;
-            int width = dynamicWidth ? (int)(windowWidth / 18) : 8;
+            string scriptName = script.GetType().Name;
+            int width = dynamicWidth ? (int)(windowWidth / 16.0f) - scriptName.Length / 4 : 8;
 
-            sb.AppendLine(script.GetType().Name.Encapsulate("=".Repeat(width) + " ", true).Colorify(ThemeManager.currentTheme.scriptColor) + "\n");
+            sb.AppendLine("\n" + scriptName.Encapsulate("=".Repeat(width) + " ", true).Colorify(ThemeManager.currentTheme.scriptColor) + "\n");
             if (showFields) foreach (var field in script.GetType().GetFields(access))
             {
                 string typeName = FormatTypeName(field.FieldType);
@@ -183,6 +194,8 @@ internal class ObjectSerializer
         if (type.IsArray || (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(List<>)))
         {
             var collection = (IEnumerable)value;
+            if (!unfoldCollections) return $"({GetLength(collection)} elements) " + "[]";
+
             return $"({GetLength(collection)} elements)[" + (collection_forceNewLine ? "\n" : "") + string.Join((collection_forceNewLine ? ",\n" : ", "), FormatEnumerable(collection)) + (collection_forceNewLine ? "\n" : "") + "]";
         }
 
@@ -190,6 +203,8 @@ internal class ObjectSerializer
         if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Dictionary<,>))
         {
             var dict = (IDictionary)value;
+            if (!unfoldCollections) return $"({GetLength(dict)} pairs) " + "{}";
+
             List<string> entries = new();
             int i = 0;
             foreach (DictionaryEntry entry in dict)
@@ -202,13 +217,13 @@ internal class ObjectSerializer
                 i++;
                 entries.Add($"{FormatValue(entry.Key)}: {FormatValue(entry.Value)}");
             }
-            return $"({GetLength(dict)} elements){{" + (collection_forceNewLine ? "\n" : "") + string.Join((collection_forceNewLine ? ",\n" : ", "), entries) + (collection_forceNewLine ? "\n" : "") + "}";
+            return $"({GetLength(dict)} pairs){{" + (collection_forceNewLine ? "\n" : "") + string.Join((collection_forceNewLine ? ",\n" : ", "), entries) + (collection_forceNewLine ? "\n" : "") + "}";
         }
 
         // Handle custom serializable classes
         if (type.IsClass && type.GetCustomAttribute(typeof(SerializableAttribute)) != null)
         {
-            return SerializeObject(value);
+            return SerializeObject(value, depthi);
         }
 
         // Handle standard types
@@ -243,11 +258,16 @@ internal class ObjectSerializer
     }
 
     // Serialize custom serializable objects
-    private string SerializeObject(object obj)
+    private string SerializeObject(object obj, int depthi = 0)
     {
+        depthi++;
+        if (depthi > maxDepth) return "MAXLIMIT";
+
         if (!unfoldSerializable) return obj.ToString();
 
         Type type = obj.GetType();
+        if (deepSerializationBlacklist.Contains(type)) return obj.ToString();
+
         List<string> vals = new();
 
         string separator = serializable_forceNewLine ? ",\n" : ", ";
@@ -257,13 +277,13 @@ internal class ObjectSerializer
         foreach (FieldInfo field in type.GetFields(access))
         {
             object fieldValue = field.GetValue(obj);
-            vals.Add(SerializeUnit(FormatTypeName(field.FieldType), field.Name, FormatValue(fieldValue), false, true));
+            vals.Add(SerializeUnit(FormatTypeName(field.FieldType), field.Name, FormatValue(fieldValue, depthi), false, true));
         }
 
         foreach (PropertyInfo prop in type.GetProperties(access))
         {
             object propValue = prop.GetValue(obj);
-            vals.Add(SerializeUnit(FormatTypeName(prop.PropertyType), prop.Name, FormatValue(propValue), true, true, prop.CanRead, prop.CanWrite));
+            vals.Add(SerializeUnit(FormatTypeName(prop.PropertyType), prop.Name, FormatValue(propValue, depthi), true, true, prop.CanRead, prop.CanWrite));
         }
 
         return type.Name + (serializable_forceNewLine ? "\n{\n" : "{") + string.Join(separator, vals) + (serializable_forceNewLine ? "\n}" : "}");

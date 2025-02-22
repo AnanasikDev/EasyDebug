@@ -11,14 +11,14 @@ public class Theme
     public Color prefixColor;
     public Color scriptColor;
 
-    public Theme(string name, Color fieldType, Color propertyType, Color value, Color nameColor, Color prefix, Color script)
+    public Theme(string name, Color fieldTypeColor, Color propertyTypeColor, Color valueColor, Color nameColor, Color prefixColor, Color scriptColor)
     {
         Name = name;
-        fieldTypeColor = fieldType;
-        propertyTypeColor = propertyType;
-        valueColor = value;
+        this.fieldTypeColor = fieldTypeColor;
+        this.propertyTypeColor = propertyTypeColor;
+        this.valueColor = valueColor;
         this.nameColor = nameColor;
-        prefixColor = prefix;
-        scriptColor = script;
+        this.prefixColor = prefixColor;
+        this.scriptColor = scriptColor;
     }
 }
