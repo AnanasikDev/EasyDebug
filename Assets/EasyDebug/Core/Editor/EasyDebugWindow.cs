@@ -2,6 +2,7 @@ using EasyDebug.Prompts;
 using UnityEditor;
 using UnityEditorInternal;
 using UnityEngine;
+using System.Collections.Generic;
 
 namespace EasyDebug
 {
@@ -28,7 +29,6 @@ namespace EasyDebug
         private static Color bgdefault;
         private static string version = "3.1.0";
         private Vector2 scroll;
-
         private bool _alwaysUpdate = true;
         private bool alwaysUpdate 
         { 
@@ -53,7 +53,21 @@ namespace EasyDebug
         public static void ShowWindow()
         {
             bgdefault = GUI.backgroundColor;
-            EditorWindow.GetWindow<EasyDebugWindow>();
+            EditorWindow.GetWindow<EasyDebugWindow>().SafeInit();
+        }
+
+        private void OnValidate()
+        {
+            SafeInit();
+        }
+
+        /// <summary>
+        /// Init safe from multi-calls
+        /// </summary>
+        public void SafeInit()
+        {
+            ThemeManager.SafeInit();
+            if (ThemeManager.currentTheme == null) ThemeManager.SetTheme(0);
         }
 
         private void OnTabChanged()
@@ -69,6 +83,19 @@ namespace EasyDebug
             GUILayout.Label(version + "v | Developed by Ananaseek");
 
             alwaysUpdate = GUILayout.Toggle(alwaysUpdate, "Always update");
+
+            EditorGUILayout.LabelField("Select Theme");
+
+            // Dropdown to select theme
+            string[] themeNames = ThemeManager.themes.ConvertAll(t => t.Name).ToArray();
+            int newIndex = EditorGUILayout.Popup("Theme", ThemeManager.currentThemeIndex, themeNames);
+
+            if (newIndex != ThemeManager.currentThemeIndex)
+            {
+                ThemeManager.SetTheme(newIndex);
+            }
+
+            EditorGUILayout.Space();
         }
 
         private void DrawTab_CommandLine()
@@ -201,7 +228,7 @@ namespace EasyDebug
                 }
                 catch (System.Exception e)
                 {
-                    GUILayout.Label("CRITICAL ERROR: " + e.Message);
+                    GUILayout.Label("CRITICAL ERROR: " + e.Message + "\n" + e.StackTrace.Substring(0, 1000));
                 }
             }
 
@@ -227,6 +254,8 @@ namespace EasyDebug
 
         private void OnGUI()
         {
+            if (serializer != null) serializer.windowWidth = position.width;
+            
             int newtab = GUILayout.Toolbar(tab, tabs);
             if (newtab != tab)
             {

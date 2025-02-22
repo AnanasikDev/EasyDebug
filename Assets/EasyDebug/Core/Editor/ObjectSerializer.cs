@@ -7,6 +7,7 @@ using System.Text;
 using UnityEditorInternal;
 using UnityEngine;
 using System.Linq;
+using Codice.Client.Common;
 
 [Serializable]
 internal class ObjectSerializer
@@ -25,6 +26,9 @@ internal class ObjectSerializer
     public bool unfoldSerializable = true;
 
     private int maxDepth = 3;
+
+    public float windowWidth;
+    private bool dynamicWidth = true;
 
     public List<AssemblyDefinitionAsset> includedAssemblyDefinitions = new List<AssemblyDefinitionAsset>();
     private HashSet<string> includedAssemblyNames = new HashSet<string>();
@@ -60,11 +64,15 @@ internal class ObjectSerializer
         }
     }
 
-    public string SerializeUnit(string typeName, string name, string value, bool isStatic)
+    public string SerializeUnit(string typeName, string name, string value, bool isStatic, bool isField, bool read = true, bool write = true)
     {
-        string prefix = isStatic ? "<color=#EEEEEF>static</color> " : "";
+        var theme = ThemeManager.currentTheme;
 
-        return prefix + $"<color=#00FF00>{typeName}</color> <color=#87CEFA>{name}</color><color=#EEEEEE>:</color> <color=#FFD700>{value}</color>";
+        string staticPrefix = (isStatic ? "static " : "").Colorify(theme.prefixColor);
+
+        string rwPrefix = isField ? "" : ("r".Colorify(read ? theme.prefixColor : Color.clear) + "w".Colorify(write ? theme.prefixColor : Color.clear) + " ");
+
+        return staticPrefix + rwPrefix + typeName.Colorify(isField ? theme.fieldTypeColor : theme.propertyTypeColor) + " " + name.Colorify(theme.nameColor) + ":".Colorify(theme.prefixColor) + " " + value.Colorify(theme.valueColor);
     }
 
     public string Serialize()
@@ -80,15 +88,16 @@ internal class ObjectSerializer
         foreach (var script in obj.GetComponents(type))
         {
             if (!allAssemblies && !IsUserDefined(script.GetType())) continue;
+            int width = dynamicWidth ? (int)(windowWidth / 18) : 8;
 
-            sb.AppendLine($"<color=#FFA500>===== {script.GetType().Name} =====</color>");
+            sb.AppendLine(script.GetType().Name.Encapsulate("=".Repeat(width) + " ", true).Colorify(ThemeManager.currentTheme.scriptColor) + "\n");
             if (showFields) foreach (var field in script.GetType().GetFields(access))
             {
                 string typeName = FormatTypeName(field.FieldType);
                 string fieldName = field.Name;
                 string fieldValue = FormatValue(field.GetValue(script));
 
-                sb.AppendLine(SerializeUnit(typeName, fieldName, fieldValue, field.IsStatic));
+                sb.AppendLine(SerializeUnit(typeName, fieldName, fieldValue, field.IsStatic, true));
             }
 
             if (showProperties) foreach (var prop in script.GetType().GetProperties(access))
@@ -96,12 +105,11 @@ internal class ObjectSerializer
                 if (prop.GetCustomAttribute<ObsoleteAttribute>() != null) continue;
 
                 string typeName = FormatTypeName(prop.PropertyType);
-                string fieldName = prop.Name;
-                string fieldValue = FormatValue(prop.GetValue(script));
+                string name = prop.Name;
+                string value = FormatValue(prop.GetValue(script));
+                bool isStatic = prop.CanRead ? (prop.GetGetMethod()?.IsStatic ?? false) : (prop.CanWrite ? prop.GetSetMethod()?.IsStatic ?? false : false);
 
-                string prefix = "<color=#EEEEEF>" + (prop.CanRead ? "r" : "" + (prop.CanWrite ? "w" : "")) + "</color> ";
-
-                sb.AppendLine(prefix + $"<color=#CAFC01>{typeName}</color> <color=#87CEFA>{fieldName}</color><color=#EEEEEE>:</color> <color=#FFD700>{fieldValue}</color>");
+                sb.AppendLine(SerializeUnit(typeName, name, value, isStatic, false, prop.CanRead, prop.CanWrite));
             }
         }
 
@@ -249,16 +257,16 @@ internal class ObjectSerializer
         foreach (FieldInfo field in type.GetFields(access))
         {
             object fieldValue = field.GetValue(obj);
-            vals.Add($"{field.Name}: {FormatValue(fieldValue)}");
+            vals.Add(SerializeUnit(FormatTypeName(field.FieldType), field.Name, FormatValue(fieldValue), false, true));
         }
 
         foreach (PropertyInfo prop in type.GetProperties(access))
         {
             object propValue = prop.GetValue(obj);
-            vals.Add($"{prop.Name}: {FormatValue(propValue)}");
+            vals.Add(SerializeUnit(FormatTypeName(prop.PropertyType), prop.Name, FormatValue(propValue), true, true, prop.CanRead, prop.CanWrite));
         }
 
-        return $"{type.Name}{{" + string.Join(separator, vals) + "}}";
+        return type.Name + (serializable_forceNewLine ? "\n{\n" : "{") + string.Join(separator, vals) + (serializable_forceNewLine ? "\n}" : "}");
     }
 
     private int GetLength(IEnumerable collection)
