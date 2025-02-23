@@ -23,7 +23,7 @@ namespace EasyDebug.Prompts
 
         private void Update()
         {
-            if (TextPromptManager.transformMode == TextPromptTransformMode.FaceCamera)
+            if (PromptManager.transformMode == TextPromptTransformMode.FaceCamera)
                 transform.LookAwayFrom(_mainCamera.transform);
         }
     }

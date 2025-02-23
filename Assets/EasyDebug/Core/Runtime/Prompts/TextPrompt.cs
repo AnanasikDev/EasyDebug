@@ -1,20 +1,14 @@
 ﻿using EasyDebug.Prompts;
-using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 
-public class TextPrompt
+public class TextPrompt : Prompt
 {
-    public static readonly List<TextPrompt> allPrompts = new List<TextPrompt>();
-
-    public string Key { get; }
-    public int Priority { get; private set; }
-
     private TextMeshPro _textMeshPro;
-    private Transform _transform;
 
     public TextPrompt(string key, string value, int priority, Transform parent)
     {
+        type = PromptType.Text;
         Key = key;
         Priority = priority;
 
@@ -23,7 +17,7 @@ public class TextPrompt
         _transform.SetParent(parent);
 
         _textMeshPro = Create3DText(value, Vector3.zero, _transform);
-        _textMeshPro.fontSize = TextPromptManager.TextSize;
+        _textMeshPro.fontSize = PromptManager.TextSize;
         _textMeshPro.alignment = TextAlignmentOptions.Center;
 
         textObject.AddComponent<TextPromptTransform>();
@@ -47,7 +41,7 @@ public class TextPrompt
         // Add and configure the TextMeshPro component
         var textMeshPro = textObject.AddComponent<TextMeshPro>();
         textMeshPro.text = text;
-        textMeshPro.fontSize = TextPromptManager.TextSize;
+        textMeshPro.fontSize = PromptManager.TextSize;
         textMeshPro.alignment = TextAlignmentOptions.Center;
         textMeshPro.textWrappingMode = TextWrappingModes.Normal;
 
@@ -59,29 +53,35 @@ public class TextPrompt
 
     public void UpdateValue(string value, int priority)
     {
-        _textMeshPro.fontSize = TextPromptManager.TextSize;
+        _textMeshPro.fontSize = PromptManager.TextSize;
         _textMeshPro.text = value;
         Priority = priority;
     }
 
-    public void UpdateState()
+    public override void UpdateState()
     {
-        ToggleState(TextPromptManager.ShowAll);
+        ToggleState(PromptManager.ShowAll);
     }
 
-    public void SetLocalPosition(Vector3 localPosition)
+    public override void SetLocalPosition(Vector3 localPosition)
     {
         _transform.localPosition = localPosition;
     }
 
-    public void ToggleState(bool state)
+    public override void ToggleState(bool state)
     {
         _transform.gameObject.SetActive(state);
     }
 
-    public void ForceDestroy()
+    public override void ForceDestroy()
     {
+
         if (_textMeshPro != null) GameObject.Destroy(_textMeshPro.gameObject);
         if (_transform != null) GameObject.Destroy(_transform.gameObject);
+    }
+
+    public override void Update()
+    {
+        throw new System.NotImplementedException();
     }
 }

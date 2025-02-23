@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace EasyDebug.Prompts
@@ -10,30 +11,56 @@ namespace EasyDebug.Prompts
         /// </summary>
         private GameObject _gameobject;
         private GameObject _promptsHandler;
-        private Dictionary<string, TextPrompt> _prompts;
-        private List<TextPrompt> _sortedPrompts;
+        private Dictionary<string, Prompt> _prompts;
+        private List<Prompt> _sortedPrompts;
 
         public PromptContainer(GameObject gameobject)
         {
-            _sortedPrompts = new List<TextPrompt>();
-            _prompts = new Dictionary<string, TextPrompt>();
+            _sortedPrompts = new List<Prompt>();
+            _prompts = new Dictionary<string, Prompt>();
 
             _gameobject = gameobject;
             _promptsHandler = new GameObject("TextPrompts");
             _promptsHandler.transform.SetParent(_gameobject.transform);
-            _promptsHandler.transform.localPosition = TextPromptManager.StartLocalOffset;
         }
 
-        public void UpdatePrompt(string key, string value, int priority)
+        public void UpdateTextPrompt(string key, string value, int priority)
         {
-            if (_prompts.TryGetValue(key, out var prompt))
+            if (_prompts.TryGetValue(key, out Prompt prompt))
             {
-                prompt.UpdateValue(value, priority);
+                ((TextPrompt)prompt).UpdateValue(value, priority);
                 prompt.UpdateState();
-                }
+            }
             else
             {
                 var newPrompt = new TextPrompt(key, value, priority, _promptsHandler.transform);
+                newPrompt.UpdateState();
+                _prompts[key] = newPrompt;
+                _sortedPrompts.Add(newPrompt);
+                SortPrompts();
+            }
+
+            UpdatePromptPositions();
+        }
+
+        public void UpdateArrowPrompt(string key, Vector3 value, Color color, Vector3? localPosition = null)
+        {
+            if (_prompts.TryGetValue(key, out Prompt prompt))
+            {
+                ((ArrowPrompt)prompt).UpdateValue(value);
+                prompt.UpdateState();
+            }
+            else
+            {
+                ArrowPrompt newPrompt;
+                if (localPosition.HasValue)
+                {
+                    newPrompt = new ArrowPrompt(key, value, localPosition.Value, color, _promptsHandler.transform);
+                }
+                else
+                {
+                    newPrompt = new ArrowPrompt(key, value, color, _promptsHandler.transform);
+                }
                 newPrompt.UpdateState();
                 _prompts[key] = newPrompt;
                 _sortedPrompts.Add(newPrompt);
@@ -50,13 +77,18 @@ namespace EasyDebug.Prompts
 
         private void UpdatePromptPositions()
         {
-            for (int i = 0; i < _sortedPrompts.Count; i++)
+            int p = 0;
+            foreach (Prompt prompt in _sortedPrompts)
             {
-                _sortedPrompts[i].SetLocalPosition(Vector3.up * i * TextPromptManager.PromptDistance);
+                if (prompt.type == PromptType.Text)
+                {
+                    prompt.SetLocalPosition(PromptManager.StartLocalOffset + Vector3.up * p * PromptManager.PromptDistance);
+                    p++;
+                }
             }
         }
 
-        public List<TextPrompt> GetAllPrompts()
+        public List<Prompt> GetAllPrompts()
         {
             return _sortedPrompts;
         }

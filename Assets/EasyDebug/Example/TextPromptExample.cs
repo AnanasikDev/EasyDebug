@@ -8,8 +8,8 @@ public class TextPromptExample : MonoBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        TextPromptManager.UpdateText(gameObject, "health", (h++).ToString(), 1);   
-        TextPromptManager.UpdateText(gameObject, "name", "Player 1", 2);
+        PromptManager.UpdateTextPrompt(gameObject, "health", (h++).ToString(), 1);   
+        PromptManager.UpdateTextPrompt(gameObject, "name", "Player 1", 2);
     }
 
     // Update is called once per frame
@@ -17,8 +17,8 @@ public class TextPromptExample : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.E))
         {
-            TextPromptManager.UpdateText(gameObject, "health", (h++).ToString(), 1);
-            TextPromptManager.UpdateText(gameObject, "name", "Player 1", 2);
+            PromptManager.UpdateTextPrompt(gameObject, "health", (h++).ToString(), 1);
+            PromptManager.UpdateTextPrompt(gameObject, "name", "Player 1", 2);
         }
     }
 }

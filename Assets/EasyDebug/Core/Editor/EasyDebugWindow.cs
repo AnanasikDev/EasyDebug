@@ -73,7 +73,7 @@ namespace EasyDebug
 
         private void Load()
         {
-            TextPromptManager.ShowAll = EditorPrefs.GetBool("prompts_showAll");
+            PromptManager.ShowAll = EditorPrefs.GetBool("prompts_showAll");
 
             serializer.allAssemblies = EditorPrefs.GetBool("serializer_allAssemblies");
             serializer.onlyScripts = EditorPrefs.GetBool("serializer_onlyScripts");
@@ -185,8 +185,8 @@ namespace EasyDebug
         private void DrawTab_Prompts()
         {
             GUILayout.Label("Runtime gameobject prompts manager");
-            TextPromptManager.ShowAll = GUILayout.Toggle(TextPromptManager.ShowAll, "Show all");
-            EditorPrefs.SetBool("prompts_showAll", TextPromptManager.ShowAll);
+            PromptManager.ShowAll = GUILayout.Toggle(PromptManager.ShowAll, "Show all");
+            EditorPrefs.SetBool("prompts_showAll", PromptManager.ShowAll);
 
             GUILayout.BeginHorizontal();
 
@@ -197,23 +197,33 @@ namespace EasyDebug
                 foreach (Object obj in Selection.objects)
                 {
                     if (obj is GameObject)
-                        TextPromptManager.DestroyAllPrompts(obj as GameObject);
+                        PromptManager.DestroyAllPrompts(obj as GameObject);
                 }
             }
 
             if (GUILayout.Button("Clear all"))
             {
-                foreach (Object obj in TextPromptManager.GetAllGameobjects())
+                foreach (Object obj in PromptManager.GetAllGameobjects())
                 {
                     if (obj is GameObject)
-                        TextPromptManager.DestroyAllPrompts(obj as GameObject);
+                        PromptManager.DestroyAllPrompts(obj as GameObject);
                 }
             }
 
-            GUI.backgroundColor = bgdefault;
+            GUI.backgroundColor = new Color(0.7f, 0.7f, 0.7f);
 
             GUILayout.EndHorizontal();
-            TextPromptManager.transformMode = (TextPromptTransformMode)EditorGUILayout.EnumPopup(TextPromptManager.transformMode);
+            PromptManager.transformMode = (TextPromptTransformMode)EditorGUILayout.EnumPopup(PromptManager.transformMode);
+
+            if (GUILayout.Button("Init updater"))
+            {
+                GameObject obj = GameObject.FindAnyObjectByType(typeof(PromptUpdater)) as GameObject;
+                if (obj == null)
+                {
+                    obj = new GameObject();
+                    obj.AddComponent<PromptUpdater>();
+                }
+            }
         }
 
         private void DrawTab_PipeConsole()

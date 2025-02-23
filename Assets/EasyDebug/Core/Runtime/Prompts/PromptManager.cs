@@ -1,11 +1,10 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
 namespace EasyDebug.Prompts
 {
-    public static class TextPromptManager
+    public static class PromptManager
     {
         public static float TextSize = 1.3f;
         public static float PromptDistance = 0.4f;
@@ -41,6 +40,16 @@ namespace EasyDebug.Prompts
 
         private static readonly Dictionary<GameObject, PromptContainer> PromptContainers = new();
 
+        private static PromptContainer GetContainer(GameObject gameobject)
+        {
+            if (!PromptContainers.TryGetValue(gameobject, out var container))
+            {
+                container = new PromptContainer(gameobject);
+                PromptContainers[gameobject] = container;
+            }
+            return container;
+        }
+
         /// <summary>
         /// Updates or creates a text prompt above a gameobject.
         /// </summary>
@@ -48,15 +57,14 @@ namespace EasyDebug.Prompts
         /// <param name="key">The key for the text prompt.</param>
         /// <param name="value">The text to display.</param>
         /// <param name="priority">Priority for stacking the text prompt.</param>
-        public static void UpdateText(GameObject gameobject, string key, string value, int priority = 0)
+        public static void UpdateTextPrompt(GameObject gameobject, string key, string value, int priority = 0)
         {
-            if (!PromptContainers.TryGetValue(gameobject, out var container))
-            {
-                container = new PromptContainer(gameobject);
-                PromptContainers[gameobject] = container;
-            }
+            GetContainer(gameobject).UpdateTextPrompt(key, value, priority);
+        }
 
-            container.UpdatePrompt(key, value, priority);
+        public static void UpdateArrowPrompt(GameObject gameobject, string key, Vector3 value, Color color, Vector3? localPosition = null)
+        {
+            GetContainer(gameobject).UpdateArrowPrompt(key, value, color, localPosition);
         }
 
         public static void DestroyAllPrompts(GameObject gameobject)

@@ -2,6 +2,7 @@
 using EasyDebug.CommandLine;
 using System.Collections.Generic;
 using System;
+using EasyDebug.Prompts;
 
 public class MainExample : MonoBehaviour
 {
@@ -32,6 +33,10 @@ public class MainExample : MonoBehaviour
     private void Update()
     {
         DrawArrow.ForDebug(transform.position, Vector3.up);
+
+        PromptManager.UpdateArrowPrompt(gameObject, "fwd", transform.forward, Color.blue);
+        PromptManager.UpdateArrowPrompt(gameObject, "up", transform.up, Color.green);
+        PromptManager.UpdateArrowPrompt(gameObject, "right", transform.right, Color.red);
     }
 
     [Command("funwithargs", ConsoleCommandType.Global)]
