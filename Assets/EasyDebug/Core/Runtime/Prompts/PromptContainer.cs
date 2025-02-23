@@ -24,16 +24,16 @@ namespace EasyDebug.Prompts
             _promptsHandler.transform.SetParent(_gameobject.transform);
         }
 
-        public void UpdateTextPrompt(string key, string value, int priority)
+        private void UpdatePrompt(string key, Func<Prompt, Prompt> createFunc)
         {
             if (_prompts.TryGetValue(key, out Prompt prompt))
             {
-                ((TextPrompt)prompt).UpdateValue(value, priority);
+                createFunc(prompt);
                 prompt.UpdateState();
             }
             else
             {
-                var newPrompt = new TextPrompt(key, value, priority, _promptsHandler.transform);
+                Prompt newPrompt = createFunc(null);
                 newPrompt.UpdateState();
                 _prompts[key] = newPrompt;
                 _sortedPrompts.Add(newPrompt);
@@ -43,31 +43,59 @@ namespace EasyDebug.Prompts
             UpdatePromptPositions();
         }
 
-        public void UpdateArrowPrompt(string key, Vector3 value, Color color, Vector3? localPosition = null)
+        public void UpdateTextPrompt(string key, string value, int priority)
         {
-            if (_prompts.TryGetValue(key, out Prompt prompt))
+            UpdatePrompt(key, (Prompt p) =>
             {
-                ((ArrowPrompt)prompt).UpdateValue(value);
-                prompt.UpdateState();
-            }
-            else
-            {
-                ArrowPrompt newPrompt;
-                if (localPosition.HasValue)
+                if (p == null)
                 {
-                    newPrompt = new ArrowPrompt(key, value, localPosition.Value, color, _promptsHandler.transform);
+                    return new TextPrompt(key, value, priority, _promptsHandler.transform);
                 }
                 else
                 {
-                    newPrompt = new ArrowPrompt(key, value, color, _promptsHandler.transform);
+                    ((TextPrompt)p).UpdateValue(value, priority);
+                    return p;
                 }
-                newPrompt.UpdateState();
-                _prompts[key] = newPrompt;
-                _sortedPrompts.Add(newPrompt);
-                SortPrompts();
-            }
+            });
+        }
 
-            UpdatePromptPositions();
+        public void UpdateArrowPrompt(string key, Vector3 direction, Color color, Vector3? localPosition = null)
+        {
+            UpdatePrompt(key, (Prompt p) =>
+            {
+                if (p == null)
+                {
+                    if (localPosition.HasValue)
+                    {
+                        return new ArrowPrompt(key, direction, localPosition.Value, color, _promptsHandler.transform);
+                    }
+                    else
+                    {
+                        return new ArrowPrompt(key, direction, color, _promptsHandler.transform);
+                    }
+                }
+                else
+                {
+                    ((ArrowPrompt)p).UpdateValue(direction);
+                    return p;
+                }
+            });
+        }
+
+        public void UpdateBoxPrompt(string key, Vector3 position, float size, Color color, bool parentRelative = true)
+        {
+            UpdatePrompt(key, (Prompt p) =>
+            {
+                if (p == null)
+                {
+                    return new BoxPrompt(key, position, size, color, _promptsHandler.transform, parentRelative);
+                }
+                else
+                {
+                    ((BoxPrompt)p).UpdateValue(position, size, color, parentRelative);
+                    return p;
+                }
+            });
         }
 
         private void SortPrompts()

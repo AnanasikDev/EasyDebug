@@ -33,6 +33,8 @@ namespace EasyDebug.Prompts
     public enum PromptType
     {
         Text,
-        Arrow
+        Arrow,
+        Box,
+        Sphere
     }
 }

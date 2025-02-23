@@ -67,6 +67,11 @@ namespace EasyDebug.Prompts
             GetContainer(gameobject).UpdateArrowPrompt(key, value, color, localPosition);
         }
 
+        public static void UpdateBoxPrompt(GameObject gameobject, string key, Vector3 position, float size, Color color, bool parentRelative = true)
+        {
+            GetContainer(gameobject).UpdateBoxPrompt(key, position, size, color, parentRelative);
+        }
+
         public static void DestroyAllPrompts(GameObject gameobject)
         {
             if (PromptContainers.TryGetValue(gameobject, out PromptContainer container))
