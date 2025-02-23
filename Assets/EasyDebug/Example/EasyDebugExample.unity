@@ -619,6 +619,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3e0d6b9947b239e4292a8294d705baf4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  aas:
+  - myint: 1
+    mystring: furries
+    myfloat: 9.123
+  - myint: 0
+    mystring: are
+    myfloat: -9
+  - myint: -1231231
+    mystring: best
+    myfloat: 3.3333333
+  - myint: 222
+    mystring: '!!!'
+    myfloat: 0
+  color: {r: 0.4, g: 1, b: 0.9, a: 1}
 --- !u!4 &788865304
 Transform:
   m_ObjectHideFlags: 0
@@ -1771,6 +1785,7 @@ GameObject:
   - component: {fileID: 1685882014}
   - component: {fileID: 1685882013}
   - component: {fileID: 1685882012}
+  - component: {fileID: 1685882015}
   m_Layer: 0
   m_Name: EventSystem
   m_TagString: Untagged
@@ -1828,6 +1843,18 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1685882015
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1685882011}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1511ccae7919cfc46b603b9b337fdc94, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!850595691 &1849129338
 LightingSettings:
   m_ObjectHideFlags: 0
@@ -1950,6 +1977,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9139ca60871d5ba47a358d52df0a7602, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  objects: []
   inputField: {fileID: 1869922134}
   suggestions: {fileID: 1869922132}
 --- !u!114 &1869922134

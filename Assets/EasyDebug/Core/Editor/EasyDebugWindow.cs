@@ -217,11 +217,10 @@ namespace EasyDebug
 
             if (GUILayout.Button("Init updater"))
             {
-                GameObject obj = GameObject.FindAnyObjectByType(typeof(PromptUpdater)) as GameObject;
+                PromptUpdater obj = GameObject.FindAnyObjectByType<PromptUpdater>();
                 if (obj == null)
                 {
-                    obj = new GameObject();
-                    obj.AddComponent<PromptUpdater>();
+                    obj = new GameObject("[debug] Prompts updater").AddComponent<PromptUpdater>();
                 }
             }
         }
