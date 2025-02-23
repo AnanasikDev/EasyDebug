@@ -3,6 +3,8 @@ using UnityEditor;
 using UnityEditorInternal;
 using UnityEngine;
 using System.Collections.Generic;
+using UnityEngine.UIElements;
+using UnityEditor.AssetImporters;
 
 namespace EasyDebug
 {
@@ -190,9 +192,10 @@ namespace EasyDebug
 
             GUILayout.BeginHorizontal();
 
+            Color bgc = GUI.backgroundColor;
             GUI.backgroundColor = new Color(1f, 0.65f, 0.68f);
 
-            if (GUILayout.Button("Clear selected"))
+            if (GUILayout.Button("Clear selected", GUILayout.MaxWidth(position.width / 2.0f)))
             {
                 foreach (Object obj in Selection.objects)
                 {
@@ -210,11 +213,12 @@ namespace EasyDebug
                 }
             }
 
-            GUI.backgroundColor = new Color(0.7f, 0.7f, 0.7f);
+            GUI.backgroundColor = bgc;
 
             GUILayout.EndHorizontal();
             PromptManager.transformMode = (TextPromptTransformMode)EditorGUILayout.EnumPopup(PromptManager.transformMode);
 
+            GUILayout.BeginHorizontal();
             if (GUILayout.Button("Init updater"))
             {
                 PromptUpdater obj = GameObject.FindAnyObjectByType<PromptUpdater>();
@@ -223,6 +227,15 @@ namespace EasyDebug
                     obj = new GameObject("[debug] Prompts updater").AddComponent<PromptUpdater>();
                 }
             }
+            if (GUILayout.Button("X", GUILayout.MaxWidth(25)))
+            {
+                PromptUpdater obj = GameObject.FindAnyObjectByType<PromptUpdater>();
+                if (obj != null)
+                {
+                    DestroyImmediate(obj.gameObject);
+                }
+            }
+            GUILayout.EndHorizontal();
         }
 
         private void DrawTab_PipeConsole()
@@ -364,6 +377,17 @@ namespace EasyDebug
                     DrawTab_ObjectSerializer();
                     break;
             }
+        }
+
+        private Texture2D MakeTex(int width, int height, Color color)
+        {
+            Texture2D tex = new Texture2D(width, height);
+            Color[] pixels = new Color[width * height];
+            for (int i = 0; i < pixels.Length; i++)
+                pixels[i] = color;
+            tex.SetPixels(pixels);
+            tex.Apply();
+            return tex;
         }
     }
 }

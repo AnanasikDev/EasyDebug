@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using UnityEngine;
 
 namespace EasyDebug.Prompts
@@ -20,8 +21,9 @@ namespace EasyDebug.Prompts
             _prompts = new Dictionary<string, Prompt>();
 
             _gameobject = gameobject;
-            _promptsHandler = new GameObject("TextPrompts");
+            _promptsHandler = new GameObject("[debug] promptsHandler");
             _promptsHandler.transform.SetParent(_gameobject.transform);
+            _promptsHandler.transform.localPosition = Vector3.zero;
         }
 
         private void UpdatePrompt(string key, Func<Prompt, Prompt> createFunc)
@@ -59,56 +61,49 @@ namespace EasyDebug.Prompts
             });
         }
 
-        public void UpdateArrowPrompt(string key, Vector3 direction, Color color, Vector3? localPosition = null)
+        public void UpdateArrowPrompt(string key, Vector3 direction, Vector3 position, Color color)
         {
             UpdatePrompt(key, (Prompt p) =>
             {
                 if (p == null)
                 {
-                    if (localPosition.HasValue)
-                    {
-                        return new ArrowPrompt(key, direction, localPosition.Value, color, _promptsHandler.transform);
-                    }
-                    else
-                    {
-                        return new ArrowPrompt(key, direction, color, _promptsHandler.transform);
-                    }
+                    return new ArrowPrompt(key, direction, position, color);
                 }
                 else
                 {
-                    ((ArrowPrompt)p).UpdateValue(direction);
+                    ((ArrowPrompt)p).UpdateValue(direction, position);
                     return p;
                 }
             });
         }
 
-        public void UpdateBoxPrompt(string key, Vector3 position, float size, Color color, bool parentRelative = true)
+        public void UpdateBoxPrompt(string key, Vector3 position, float size, Color color)
         {
             UpdatePrompt(key, (Prompt p) =>
             {
                 if (p == null)
                 {
-                    return new BoxPrompt(key, position, size, color, _promptsHandler.transform, parentRelative);
+                    return new BoxPrompt(key, position, size, color);
                 }
                 else
                 {
-                    ((BoxPrompt)p).UpdateValue(position, size, color, parentRelative);
+                    ((BoxPrompt)p).UpdateValue(position, size, color);
                     return p;
                 }
             });
         }
 
-        public void UpdateSpherePrompt(string key, Vector3 position, float radius, Color color, bool parentRelative = true)
+        public void UpdateSpherePrompt(string key, Vector3 position, float radius, Color color)
         {
             UpdatePrompt(key, (Prompt p) =>
             {
                 if (p == null)
                 {
-                    return new SpherePrompt(key, position, radius, color, _promptsHandler.transform, parentRelative);
+                    return new SpherePrompt(key, position, radius, color);
                 }
                 else
                 {
-                    ((SpherePrompt)p).UpdateValue(position, radius, color, parentRelative);
+                    ((SpherePrompt)p).UpdateValue(position, radius, color);
                     return p;
                 }
             });
@@ -137,9 +132,17 @@ namespace EasyDebug.Prompts
             return _sortedPrompts;
         }
 
-        public GameObject GetGameobject()
+        public GameObject GetHandlerGameobject()
         {
             return _promptsHandler;
+        }
+
+        public void Destroy()
+        {
+            foreach (Prompt p in _prompts.Values)
+                p.ForceDestroy();
+            _prompts.Clear();
+            GameObject.Destroy(GetHandlerGameobject());
         }
     }
 }

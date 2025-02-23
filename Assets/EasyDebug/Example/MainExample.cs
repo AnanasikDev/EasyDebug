@@ -37,17 +37,15 @@ public class MainExample : MonoBehaviour
     {
         RuntimeGizmos.DrawArrow(transform.position, Vector3.up);
 
-        PromptManager.UpdateArrowPrompt(gameObject, "fwd", transform.forward, Color.blue);
-        PromptManager.UpdateArrowPrompt(gameObject, "up", transform.up, Color.green);
-        PromptManager.UpdateArrowPrompt(gameObject, "right", transform.right, Color.red);
-
         if (Input.GetKeyDown(KeyCode.Q)) state = !state;
 
         if (state)
         {
-            //PromptManager.UpdateBoxPrompt(gameObject, "box", Vector3.zero, 1, Color.white);
+            PromptManager.UpdateArrowPrompt(gameObject, "fwd", transform.forward, transform.position, Color.blue);
+            PromptManager.UpdateArrowPrompt(gameObject, "up", transform.up, transform.position, Color.green);
+            PromptManager.UpdateArrowPrompt(gameObject, "right", transform.right, transform.position, Color.red);
             PromptManager.UpdateSpherePrompt(gameObject, "sphere", Vector3.zero, 0.5f, Color.red);
-            PromptManager.UpdateBoxPrompt(gameObject, "box1", transform.position / 2.0f, 1, Color.white, false);
+            PromptManager.UpdateBoxPrompt(gameObject, "box1", transform.position / 2.0f, 1, Color.white);
         }
     }
 

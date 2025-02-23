@@ -8,30 +8,24 @@ namespace EasyDebug.Prompts
         public float radius;
         public Color color;
 
-        /// <summary>
-        /// Whether position is relative to the parent object or global
-        /// </summary>
-        public bool parentRelative = true;
+        public bool show = true;
 
-        public SpherePrompt(string key, Vector3 localPosition, float radius, Color color, Transform parent, bool parentRelative = true)
+        public SpherePrompt(string key, Vector3 localPosition, float radius, Color color)
         {
             type = PromptType.Sphere;
             Key = key;
             this.radius = radius;
             this.position = localPosition;
             this.color = color;
-            this.parentRelative = parentRelative;
-            _transform = parent;
             allPrompts.Add(this);
             PromptUpdater.onUpdateEvent += Update;
         }
 
-        public void UpdateValue(Vector3 postition, float radius, Color color, bool parentRelative = true)
+        public void UpdateValue(Vector3 postition, float radius, Color color)
         {
             this.position = postition;
             this.radius = radius;
             this.color = color;
-            this.parentRelative = parentRelative;
         }
 
         public override void SetLocalPosition(Vector3 localPosition)
@@ -40,7 +34,7 @@ namespace EasyDebug.Prompts
 
         public override void ToggleState(bool state)
         {
-            _transform.gameObject.SetActive(state);
+            show = state;
         }
 
         public override void ForceDestroy()
@@ -50,7 +44,9 @@ namespace EasyDebug.Prompts
 
         public override void Update()
         {
-            RuntimeGizmos.DrawWireSphere((parentRelative ? _transform.position : Vector3.zero) + position, radius, color, Time.deltaTime, 24);
+            if (!show) return;
+
+            RuntimeGizmos.DrawWireSphere(position, radius, color, Time.deltaTime, 24);
         }
     }
 }

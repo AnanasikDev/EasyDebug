@@ -7,26 +7,13 @@ namespace EasyDebug.Prompts
         public Vector3 vector;
         public Vector3 localPosition;
         public Color color = Color.white;
+
         public bool show = true;
 
-        public ArrowPrompt(string key, Vector3 vector, Color color, Transform parent)
+        public ArrowPrompt(string key, Vector3 vector, Vector3 localPosition, Color color)
         {
             type = PromptType.Arrow;
             Key = key;
-            _transform = parent;
-
-            this.color = color;
-            this.vector = vector;
-
-            allPrompts.Add(this);
-            PromptUpdater.onUpdateEvent += Update;
-        }
-
-        public ArrowPrompt(string key, Vector3 vector, Vector3 localPosition, Color color, Transform parent)
-        {
-            type = PromptType.Arrow;
-            Key = key;
-            _transform = parent;
 
             this.color = color;
             this.vector = vector;
@@ -36,20 +23,10 @@ namespace EasyDebug.Prompts
             PromptUpdater.onUpdateEvent += Update;
         }
 
-        public void UpdateValue(Vector3 vector)
+        public void UpdateValue(Vector3 vector, Vector3 position)
         {
             this.vector = vector;
-        }
-
-        public void UpdateValue(Vector3 vector, Vector3 localPosition)
-        {
-            this.vector = vector;
-            this.localPosition = localPosition;
-        }
-
-        public override void UpdateState()
-        {
-            ToggleState(PromptManager.ShowAll);
+            this.localPosition = position;
         }
 
         public override void SetLocalPosition(Vector3 localPosition)
@@ -69,7 +46,9 @@ namespace EasyDebug.Prompts
 
         public override void Update()
         {
-            RuntimeGizmos.DrawArrow(_transform.position + localPosition, vector, duration: Time.deltaTime, color: color);
+            if (!show) return;
+
+            RuntimeGizmos.DrawArrow(localPosition, vector, duration: Time.deltaTime, color: color);
         }
     }
 }

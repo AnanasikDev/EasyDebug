@@ -62,19 +62,19 @@ namespace EasyDebug.Prompts
             GetContainer(gameobject).UpdateTextPrompt(key, value, priority);
         }
 
-        public static void UpdateArrowPrompt(GameObject gameobject, string key, Vector3 value, Color color, Vector3? localPosition = null)
+        public static void UpdateArrowPrompt(GameObject gameobject, string key, Vector3 value, Vector3 position, Color color)
         {
-            GetContainer(gameobject).UpdateArrowPrompt(key, value, color, localPosition);
+            GetContainer(gameobject).UpdateArrowPrompt(key, value, position, color);
         }
 
-        public static void UpdateBoxPrompt(GameObject gameobject, string key, Vector3 position, float size, Color color, bool parentRelative = true)
+        public static void UpdateBoxPrompt(GameObject gameobject, string key, Vector3 position, float size, Color color)
         {
-            GetContainer(gameobject).UpdateBoxPrompt(key, position, size, color, parentRelative);
+            GetContainer(gameobject).UpdateBoxPrompt(key, position, size, color);
         }
 
-        public static void UpdateSpherePrompt(GameObject gameobject, string key, Vector3 position, float radius, Color color, bool parentRelative = true)
+        public static void UpdateSpherePrompt(GameObject gameobject, string key, Vector3 position, float radius, Color color)
         {
-            GetContainer(gameobject).UpdateSpherePrompt(key, position, radius, color, parentRelative);
+            GetContainer(gameobject).UpdateSpherePrompt(key, position, radius, color);
         }
 
         public static void DestroyAllPrompts(GameObject gameobject)
@@ -82,7 +82,7 @@ namespace EasyDebug.Prompts
             if (PromptContainers.TryGetValue(gameobject, out PromptContainer container))
             {
                 PromptContainers.Remove(gameobject);
-                GameObject.Destroy(container.GetGameobject());
+                container.Destroy();
             }
         }
 
