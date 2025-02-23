@@ -98,6 +98,22 @@ namespace EasyDebug.Prompts
             });
         }
 
+        public void UpdateSpherePrompt(string key, Vector3 position, float radius, Color color, bool parentRelative = true)
+        {
+            UpdatePrompt(key, (Prompt p) =>
+            {
+                if (p == null)
+                {
+                    return new SpherePrompt(key, position, radius, color, _promptsHandler.transform, parentRelative);
+                }
+                else
+                {
+                    ((SpherePrompt)p).UpdateValue(position, radius, color, parentRelative);
+                    return p;
+                }
+            });
+        }
+
         private void SortPrompts()
         {
             _sortedPrompts.Sort((a, b) => b.Priority.CompareTo(a.Priority));

@@ -2,10 +2,10 @@ using UnityEngine;
 
 namespace EasyDebug.Prompts
 {
-    public class BoxPrompt : Prompt
+    public class SpherePrompt : Prompt
     {
         public Vector3 position;
-        public float size;
+        public float radius;
         public Color color;
 
         /// <summary>
@@ -13,11 +13,11 @@ namespace EasyDebug.Prompts
         /// </summary>
         public bool parentRelative = true;
 
-        public BoxPrompt(string key, Vector3 localPosition, float size, Color color, Transform parent, bool parentRelative = true)
+        public SpherePrompt(string key, Vector3 localPosition, float radius, Color color, Transform parent, bool parentRelative = true)
         {
-            type = PromptType.Box;
+            type = PromptType.Sphere;
             Key = key;
-            this.size = size;
+            this.radius = radius;
             this.position = localPosition;
             this.color = color;
             this.parentRelative = parentRelative;
@@ -26,10 +26,10 @@ namespace EasyDebug.Prompts
             PromptUpdater.onUpdateEvent += Update;
         }
 
-        public void UpdateValue(Vector3 position, float size, Color color, bool parentRelative = true)
+        public void UpdateValue(Vector3 postition, float radius, Color color, bool parentRelative = true)
         {
-            this.position = position;
-            this.size = size;
+            this.position = postition;
+            this.radius = radius;
             this.color = color;
             this.parentRelative = parentRelative;
         }
@@ -50,7 +50,7 @@ namespace EasyDebug.Prompts
 
         public override void Update()
         {
-            RuntimeGizmos.DrawWireCube((parentRelative ? _transform.position : Vector3.zero) + position, size, color, Time.deltaTime);
+            RuntimeGizmos.DrawWireSphere((parentRelative ? _transform.position : Vector3.zero) + position, radius, color, Time.deltaTime, 24);
         }
     }
 }

@@ -72,6 +72,11 @@ namespace EasyDebug.Prompts
             GetContainer(gameobject).UpdateBoxPrompt(key, position, size, color, parentRelative);
         }
 
+        public static void UpdateSpherePrompt(GameObject gameobject, string key, Vector3 position, float radius, Color color, bool parentRelative = true)
+        {
+            GetContainer(gameobject).UpdateSpherePrompt(key, position, radius, color, parentRelative);
+        }
+
         public static void DestroyAllPrompts(GameObject gameobject)
         {
             if (PromptContainers.TryGetValue(gameobject, out PromptContainer container))

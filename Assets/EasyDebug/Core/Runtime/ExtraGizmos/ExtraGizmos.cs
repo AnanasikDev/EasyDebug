@@ -21,7 +21,7 @@ namespace EasyDebug
 
     public class RuntimeGizmos
     {
-        public static void DrawWireCube(Vector3 position, float size, Color color, float duration)
+        public static void DrawWireCube(Vector3 position, float size, Color color, float duration = 0.2f)
         {
             float h = size * 0.5f;
             Vector3[] p = {
@@ -39,11 +39,32 @@ namespace EasyDebug
             Debug.DrawRay(p[2], p[6] - p[2], color, duration); Debug.DrawRay(p[3], p[7] - p[3], color, duration);
         }
 
+        public static void DrawWireSphere(Vector3 position, float radius, Color color, float duration = 0.2f, int segments = 16)
+        {
+            float angleStep = 360f / segments;
+
+            void DrawCircle(Vector3 axis1, Vector3 axis2)
+            {
+                for (int i = 0; i < segments; i++)
+                {
+                    float a1 = Mathf.Deg2Rad * (i * angleStep);
+                    float a2 = Mathf.Deg2Rad * ((i + 1) * angleStep);
+                    Vector3 p1 = position + (axis1 * Mathf.Cos(a1) + axis2 * Mathf.Sin(a1)) * radius;
+                    Vector3 p2 = position + (axis1 * Mathf.Cos(a2) + axis2 * Mathf.Sin(a2)) * radius;
+                    Debug.DrawRay(p1, p2 - p1, color, duration);
+                }
+            }
+
+            DrawCircle(Vector3.right, Vector3.up);
+            DrawCircle(Vector3.right, Vector3.forward);
+            DrawCircle(Vector3.up, Vector3.forward);
+        }
+
 
         /// <summary>
         /// Runtime function to draw an arrow in scene space. Uses Debug class for visualization.
         /// </summary>
-        public static void DrawArrow(Vector3 pos, Vector3 direction, float duration = 0.5f, Color? color = null, ArrowType type = ArrowType.Default, float arrowHeadLength = 0.2f, float arrowHeadAngle = 30.0f, bool sceneCamFollows = false)
+        public static void DrawArrow(Vector3 pos, Vector3 direction, float duration = 0.2f, Color? color = null, ArrowType type = ArrowType.Default, float arrowHeadLength = 0.2f, float arrowHeadAngle = 30.0f, bool sceneCamFollows = false)
         {
             Color actualColor = color ?? Color.white;
             duration = duration / Time.timeScale;

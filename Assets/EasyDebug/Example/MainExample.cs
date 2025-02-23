@@ -31,6 +31,8 @@ public class MainExample : MonoBehaviour
         var v = aas[0];
     }
 
+    bool state = true;
+
     private void Update()
     {
         RuntimeGizmos.DrawArrow(transform.position, Vector3.up);
@@ -39,7 +41,14 @@ public class MainExample : MonoBehaviour
         PromptManager.UpdateArrowPrompt(gameObject, "up", transform.up, Color.green);
         PromptManager.UpdateArrowPrompt(gameObject, "right", transform.right, Color.red);
 
-        PromptManager.UpdateBoxPrompt(gameObject, "box", Vector3.zero, 1, Color.white);
+        if (Input.GetKeyDown(KeyCode.Q)) state = !state;
+
+        if (state)
+        {
+            //PromptManager.UpdateBoxPrompt(gameObject, "box", Vector3.zero, 1, Color.white);
+            PromptManager.UpdateSpherePrompt(gameObject, "sphere", Vector3.zero, 0.5f, Color.red);
+            PromptManager.UpdateBoxPrompt(gameObject, "box1", transform.position / 2.0f, 1, Color.white, false);
+        }
     }
 
     [Command("funwithargs", ConsoleCommandType.Global)]
