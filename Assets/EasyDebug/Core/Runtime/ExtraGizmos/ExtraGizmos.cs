@@ -1,8 +1,4 @@
 using UnityEngine;
-using System.Collections;
-#if UNITY_EDITOR
-using UnityEditor;
-#endif
 // adapted from http://wiki.unity3d.com/index.php/DrawArrow 
 // https://gist.github.com/MatthewMaker/5293052
 
@@ -39,25 +35,25 @@ namespace EasyDebug
             Debug.DrawRay(p[2], p[6] - p[2], color, duration); Debug.DrawRay(p[3], p[7] - p[3], color, duration);
         }
 
-        public static void DrawWireSphere(Vector3 position, float radius, Color color, float duration = 0.2f, int segments = 16)
+        public static void DrawCircle(Vector3 position, Vector3 axis1, Vector3 axis2, float radius, Color color, float duration = 0.2f, int segments = 16)
         {
             float angleStep = 360f / segments;
 
-            void DrawCircle(Vector3 axis1, Vector3 axis2)
+            for (int i = 0; i < segments; i++)
             {
-                for (int i = 0; i < segments; i++)
-                {
-                    float a1 = Mathf.Deg2Rad * (i * angleStep);
-                    float a2 = Mathf.Deg2Rad * ((i + 1) * angleStep);
-                    Vector3 p1 = position + (axis1 * Mathf.Cos(a1) + axis2 * Mathf.Sin(a1)) * radius;
-                    Vector3 p2 = position + (axis1 * Mathf.Cos(a2) + axis2 * Mathf.Sin(a2)) * radius;
-                    Debug.DrawRay(p1, p2 - p1, color, duration);
-                }
+                float a1 = Mathf.Deg2Rad * (i * angleStep);
+                float a2 = Mathf.Deg2Rad * ((i + 1) * angleStep);
+                Vector3 p1 = position + (axis1 * Mathf.Cos(a1) + axis2 * Mathf.Sin(a1)) * radius;
+                Vector3 p2 = position + (axis1 * Mathf.Cos(a2) + axis2 * Mathf.Sin(a2)) * radius;
+                Debug.DrawRay(p1, p2 - p1, color, duration);
             }
+        }
 
-            DrawCircle(Vector3.right, Vector3.up);
-            DrawCircle(Vector3.right, Vector3.forward);
-            DrawCircle(Vector3.up, Vector3.forward);
+        public static void DrawWireSphere(Vector3 position, float radius, Color color, float duration = 0.2f, int segments = 16)
+        {
+            DrawCircle(position, Vector3.right, Vector3.up, radius, color, duration, segments);
+            DrawCircle(position, Vector3.right, Vector3.forward, radius, color, duration, segments);
+            DrawCircle(position, Vector3.up, Vector3.forward, radius, color, duration, segments);
         }
 
 

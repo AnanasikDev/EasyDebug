@@ -47,6 +47,8 @@ public class MainExample : MonoBehaviour
             PromptManager.UpdateSpherePrompt(gameObject, "sphere", Vector3.zero, 0.5f, Color.red);
             PromptManager.UpdateBoxPrompt(gameObject, "box1", transform.position / 2.0f, 1, Color.white);
         }
+
+        RuntimeGizmos.DrawCircle(transform.position, transform.forward, transform.right, 3, Color.white);
     }
 
     [Command("funwithargs", ConsoleCommandType.Global)]
