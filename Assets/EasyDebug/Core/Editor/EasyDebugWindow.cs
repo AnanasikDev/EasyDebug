@@ -32,6 +32,9 @@ namespace EasyDebug
         private static string version = "3.1.0";
         private Vector2 scroll;
         private bool _alwaysUpdate = true;
+
+        private bool serializer_gameObjectsOnly = true;
+
         private bool alwaysUpdate 
         { 
             get 
@@ -70,6 +73,7 @@ namespace EasyDebug
         {
             ThemeManager.SafeInit();
             ThemeManager.SetTheme(EditorPrefs.GetInt("themeIndex"));
+            StaticClassSelector.Init();
             Load();
         }
 
@@ -90,6 +94,7 @@ namespace EasyDebug
             serializer.unfoldSerializable = EditorPrefs.GetBool("serializer_unfoldSerializable");
             serializer.serializable_forceNewLine = EditorPrefs.GetBool("serializer_serializable_forceNewLine");
             serializer.collection_maxLimit = EditorPrefs.GetInt("serializer_collection_maxLimit");
+            serializer.maxInnerDepth = EditorPrefs.GetInt("serializer_maxInnerDepth");
         }
 
         private void Save()
@@ -104,6 +109,7 @@ namespace EasyDebug
             EditorPrefs.SetBool("serializer_unfoldSerializable", serializer.unfoldSerializable);
             EditorPrefs.SetBool("serializer_serializable_forceNewLine", serializer.serializable_forceNewLine);
             EditorPrefs.SetInt("serializer_collection_maxLimit", serializer.collection_maxLimit);
+            EditorPrefs.SetInt("serializer_maxInnerDepth", serializer.maxInnerDepth);
         }
 
         private void OnEnable()
@@ -246,11 +252,40 @@ namespace EasyDebug
         private void DrawTab_ObjectSerializer()
         {
             EditorGUILayout.BeginHorizontal();
-            serializer.obj = (GameObject)EditorGUILayout.ObjectField("", serializer.obj, typeof(GameObject), true);
-            if (GUILayout.Button("S", GUILayout.MaxWidth(25)))
+            if (serializer_gameObjectsOnly)
             {
-                serializer.obj = Selection.activeGameObject;
+                if (GUILayout.Button(">Static", GUILayout.MaxWidth(80)))
+                {
+                    serializer_gameObjectsOnly = false;
+                }
             }
+            else
+            {
+                if (GUILayout.Button(">Objects", GUILayout.MaxWidth(80)))
+                {
+                    serializer_gameObjectsOnly = true;
+                }
+            }
+
+            if (serializer_gameObjectsOnly)
+            {
+                serializer.obj = (GameObject)EditorGUILayout.ObjectField("", serializer.obj, typeof(GameObject), true);
+                if (GUILayout.Button("S", GUILayout.MaxWidth(25)))
+                {
+                    serializer.obj = Selection.activeGameObject;
+                }
+
+                serializer.staticType = null;
+            }
+
+            else
+            {
+                StaticClassSelector.selectedIndex = EditorGUILayout.Popup("Static classes", StaticClassSelector.selectedIndex, StaticClassSelector.staticClassNames.ToArray());
+                serializer.staticType = StaticClassSelector.GetType(StaticClassSelector.selectedIndex);
+
+                serializer.obj = null;
+            }
+
             if (GUILayout.Button("X", GUILayout.MaxWidth(25)))
             {
                 serializer.obj = null;
@@ -275,14 +310,6 @@ namespace EasyDebug
             if (serializer.unfoldCollections)
             {
                 serializer.collection_forceNewLine = GUILayout.Toggle(serializer.collection_forceNewLine, "Force new line", GUILayout.MaxWidth(optionWidth));
-            } 
-            EditorGUILayout.EndHorizontal();
-
-            EditorGUILayout.BeginHorizontal();
-            serializer.unfoldSerializable = GUILayout.Toggle(serializer.unfoldSerializable, "Unfold serializable", GUILayout.MaxWidth(optionWidth));
-            if (serializer.unfoldSerializable)
-            {
-                serializer.serializable_forceNewLine = GUILayout.Toggle(serializer.serializable_forceNewLine, "Force new line", GUILayout.MaxWidth(optionWidth));
 
                 EditorGUILayout.BeginHorizontal();
                 EditorGUILayout.LabelField("Max limit", GUILayout.MaxWidth(60));
@@ -294,6 +321,27 @@ namespace EasyDebug
                 if (GUILayout.Button(">", GUILayout.MaxHeight(16), GUILayout.MaxWidth(16)))
                 {
                     serializer.collection_maxLimit++;
+                }
+                EditorGUILayout.EndHorizontal();
+            } 
+            EditorGUILayout.EndHorizontal();
+
+            EditorGUILayout.BeginHorizontal();
+            serializer.unfoldSerializable = GUILayout.Toggle(serializer.unfoldSerializable, "Unfold serializable", GUILayout.MaxWidth(optionWidth));
+            if (serializer.unfoldSerializable)
+            {
+                serializer.serializable_forceNewLine = GUILayout.Toggle(serializer.serializable_forceNewLine, "Force new line", GUILayout.MaxWidth(optionWidth));
+
+                EditorGUILayout.BeginHorizontal();
+                EditorGUILayout.LabelField("Max limit", GUILayout.MaxWidth(60));
+                serializer.maxInnerDepth = EditorGUILayout.IntField(serializer.maxInnerDepth, GUILayout.MaxWidth(50));
+                if (GUILayout.Button("<", GUILayout.MaxHeight(16), GUILayout.MaxWidth(16)))
+                {
+                    serializer.maxInnerDepth = (serializer.maxInnerDepth == 0 ? 0 : serializer.maxInnerDepth - 1);
+                }
+                if (GUILayout.Button(">", GUILayout.MaxHeight(16), GUILayout.MaxWidth(16)))
+                {
+                    serializer.maxInnerDepth++;
                 }
                 EditorGUILayout.EndHorizontal();
             }
@@ -334,16 +382,20 @@ namespace EasyDebug
 
             scroll = GUILayout.BeginScrollView(scroll);
 
-            if (serializer.obj != null)
+            try
             {
-                try
+                if (serializer_gameObjectsOnly && serializer.obj != null)
                 {
-                    GUILayout.Label(serializer.Serialize(), new GUIStyle { richText = true });
+                    GUILayout.Label(serializer.SerializeGameobject(), new GUIStyle { richText = true });
                 }
-                catch (System.Exception e)
+                else if (!serializer_gameObjectsOnly && serializer.staticType != null)
                 {
-                    GUILayout.Label("CRITICAL ERROR: " + e.Message + "\n" + (e.StackTrace.Length > 1000 ? e.StackTrace.Substring(0, 1000) : e.StackTrace));
+                    GUILayout.Label(serializer.SerializeStaticType(), new GUIStyle { richText = true });
                 }
+            }
+            catch (System.Exception e)
+            {
+                GUILayout.Label("CRITICAL ERROR: " + e.Message + "\n" + (e.StackTrace.Length > 1000 ? e.StackTrace.Substring(0, 1000) : e.StackTrace));
             }
 
             GUILayout.EndScrollView();
@@ -377,17 +429,6 @@ namespace EasyDebug
                     DrawTab_ObjectSerializer();
                     break;
             }
-        }
-
-        private Texture2D MakeTex(int width, int height, Color color)
-        {
-            Texture2D tex = new Texture2D(width, height);
-            Color[] pixels = new Color[width * height];
-            for (int i = 0; i < pixels.Length; i++)
-                pixels[i] = color;
-            tex.SetPixels(pixels);
-            tex.Apply();
-            return tex;
         }
     }
 }

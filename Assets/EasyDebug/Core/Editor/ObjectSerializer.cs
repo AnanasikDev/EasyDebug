@@ -14,6 +14,7 @@ internal class ObjectSerializer
 {
     public static ObjectSerializer instance;
     public GameObject obj;
+    public Type staticType;
 
     public bool onlyScripts = true;
     public bool allAssemblies = false;
@@ -24,12 +25,11 @@ internal class ObjectSerializer
 
     public bool unfoldSerializable = true;
     public bool serializable_forceNewLine = true;
+    public int maxInnerDepth = 3;
 
     public bool unfoldCollections = true;
     public bool collection_forceNewLine = true;
     public int collection_maxLimit = 30;
-
-    private int maxDepth = 3;
 
     public float windowWidth;
     private bool dynamicWidth = true;
@@ -85,7 +85,7 @@ internal class ObjectSerializer
         return staticPrefix + rwPrefix + typeName.Colorify(isField ? theme.fieldTypeColor : theme.propertyTypeColor) + " " + name.Colorify(theme.nameColor) + ":".Colorify(theme.prefixColor) + " " + value.Colorify(theme.valueColor);
     }
 
-    public string Serialize()
+    public string SerializeGameobject()
     {
         if (obj == null) return "No object selected.";
 
@@ -122,6 +122,48 @@ internal class ObjectSerializer
 
                 sb.AppendLine(SerializeUnit(typeName, name, value, isStatic, false, prop.CanRead, prop.CanWrite));
             }
+        }
+
+        return sb.ToString();
+    }
+
+    public string SerializeStaticType()
+    {
+        if (staticType == null) return "No type selected.";
+
+        StringBuilder sb = new StringBuilder();
+
+        BindingFlags access = BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic;
+
+        if (!allAssemblies && !IsUserDefined(staticType)) return "-";
+
+        string staticTypeName = staticType.Name;
+        int width = dynamicWidth ? (int)(windowWidth / 16.0f) - staticTypeName.Length / 4 : 8;
+
+        sb.AppendLine("\n" + staticTypeName.Encapsulate("=".Repeat(width) + " ", true).Colorify(ThemeManager.currentTheme.scriptColor) + "\n");
+
+        if (showFields) foreach (var field in staticType.GetType().GetFields(access))
+        {
+            string typeName = FormatTypeName(field.FieldType);
+            string fieldName = field.Name;
+            if (!field.IsStatic) continue;
+            string fieldValue = FormatValue(field.GetValue(null));
+
+            sb.AppendLine(SerializeUnit(typeName, fieldName, fieldValue, isStatic: true, true));
+        }
+
+        if (showProperties) foreach (var prop in staticType.GetProperties(access))
+        {
+            if (prop.GetCustomAttribute<ObsoleteAttribute>() != null) continue;
+
+            string typeName = FormatTypeName(prop.PropertyType);
+            string name = prop.Name;
+            bool isStatic = prop.CanRead ? (prop.GetGetMethod()?.IsStatic ?? false) : (prop.CanWrite ? prop.GetSetMethod()?.IsStatic ?? false : false);
+            if (!isStatic) continue;
+
+            string value = FormatValue(prop.GetValue(null));
+
+            sb.AppendLine(SerializeUnit(typeName, name, value, isStatic: true, false, prop.CanRead, prop.CanWrite));
         }
 
         return sb.ToString();
@@ -177,9 +219,6 @@ internal class ObjectSerializer
 
     private string FormatValue(object value, int depthi = 0)
     {
-        depthi++;
-        if (depthi > maxDepth) return "MAXLIMIT";
-
         if (value == null)
             return "null";
 
@@ -260,8 +299,10 @@ internal class ObjectSerializer
     // Serialize custom serializable objects
     private string SerializeObject(object obj, int depthi = 0)
     {
+        if (obj == null) return "null";
+
         depthi++;
-        if (depthi > maxDepth) return "MAXLIMIT";
+        if (depthi > maxInnerDepth) return obj.GetType().ToString() + " MAXLIMIT";
 
         if (!unfoldSerializable) return obj.ToString();
 
@@ -271,22 +312,24 @@ internal class ObjectSerializer
         List<string> vals = new();
 
         string separator = serializable_forceNewLine ? ",\n" : ", ";
+        string tab = "  ".Repeat(depthi);
+        string tab1 = "  ".Repeat(depthi - 1);
 
         BindingFlags access = GetBindingFlags();
 
         foreach (FieldInfo field in type.GetFields(access))
         {
             object fieldValue = field.GetValue(obj);
-            vals.Add(SerializeUnit(FormatTypeName(field.FieldType), field.Name, FormatValue(fieldValue, depthi), false, true));
+            vals.Add(tab + SerializeUnit(FormatTypeName(field.FieldType), field.Name, FormatValue(fieldValue, depthi), false, true));
         }
 
         foreach (PropertyInfo prop in type.GetProperties(access))
         {
             object propValue = prop.GetValue(obj);
-            vals.Add(SerializeUnit(FormatTypeName(prop.PropertyType), prop.Name, FormatValue(propValue, depthi), true, true, prop.CanRead, prop.CanWrite));
+            vals.Add(tab + SerializeUnit(FormatTypeName(prop.PropertyType), prop.Name, FormatValue(propValue, depthi), true, true, prop.CanRead, prop.CanWrite));
         }
 
-        return type.Name + (serializable_forceNewLine ? "\n{\n" : "{") + string.Join(separator, vals) + (serializable_forceNewLine ? "\n}" : "}");
+        return type.Name + (serializable_forceNewLine ? "\n" + tab1 + "{\n" : "{") + string.Join(separator, vals) + (serializable_forceNewLine ? "\n" + tab1 + "}" : "}");
     }
 
     private int GetLength(IEnumerable collection)

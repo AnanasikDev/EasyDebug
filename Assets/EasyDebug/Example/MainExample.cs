@@ -8,6 +8,7 @@ using EasyDebug;
 public class MainExample : MonoBehaviour
 {
     private A a = new A(1, "ohohoh", 23);
+    private B b = new B();
 
     public Dictionary<int, string> mydict = new Dictionary<int, string>()
     {
@@ -161,4 +162,11 @@ public class A
         mystring = _string;
         myfloat = _float;
     }
+}
+
+[Serializable]
+public class B
+{
+    public A a1 = new A(42, "heh", 2);
+    public A a2 = new A(2, "heh", 24);
 }
