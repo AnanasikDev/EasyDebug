@@ -395,7 +395,8 @@ namespace EasyDebug
             }
             catch (System.Exception e)
             {
-                GUILayout.Label("CRITICAL ERROR: " + e.Message + "\n" + (e.StackTrace.Length > 1000 ? e.StackTrace.Substring(0, 1000) : e.StackTrace));
+                GUILayout.Label("CRITICAL ERROR: " + e.ToString());
+                //Debug.LogException(e);
             }
 
             GUILayout.EndScrollView();

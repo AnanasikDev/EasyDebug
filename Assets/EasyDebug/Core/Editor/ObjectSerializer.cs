@@ -9,6 +9,7 @@ using UnityEngine;
 using System.Linq;
 using TMPro;
 using UnityEngine.UI;
+using System.CodeDom;
 
 internal class ObjectSerializer
 {
@@ -142,7 +143,7 @@ internal class ObjectSerializer
 
         sb.AppendLine("\n" + staticTypeName.Encapsulate("=".Repeat(width) + " ", true).Colorify(ThemeManager.currentTheme.scriptColor) + "\n");
 
-        if (showFields) foreach (var field in staticType.GetType().GetFields(access))
+        if (showFields) foreach (var field in staticType.GetFields(access))
         {
             string typeName = FormatTypeName(field.FieldType);
             string fieldName = field.Name;
@@ -229,6 +230,11 @@ internal class ObjectSerializer
             return value.ToString();
         }
 
+        if (value is Type)
+        {
+            return $"Type({value})";
+        }
+
         // Handle arrays
         if (type.IsArray || (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(List<>)))
         {
@@ -260,7 +266,7 @@ internal class ObjectSerializer
         }
 
         // Handle custom serializable classes
-        if (type.IsClass && type.GetCustomAttribute(typeof(SerializableAttribute)) != null)
+        if (value != null && type.IsClass && !(value.GetType().IsAbstract && value.GetType().IsSealed) && type.GetCustomAttribute(typeof(SerializableAttribute)) != null)
         {
             return SerializeObject(value, depthi);
         }
