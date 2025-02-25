@@ -170,3 +170,9 @@ public class B
     public A a1 = new A(42, "heh", 2);
     public A a2 = new A(2, "heh", 24);
 }
+
+public static class Hehe
+{
+    static B b = new B();
+    private static A a { get; set; } = new A(1, "e", 2);
+}

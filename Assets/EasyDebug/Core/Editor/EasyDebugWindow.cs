@@ -2,9 +2,7 @@ using EasyDebug.Prompts;
 using UnityEditor;
 using UnityEditorInternal;
 using UnityEngine;
-using System.Collections.Generic;
-using UnityEngine.UIElements;
-using UnityEditor.AssetImporters;
+using EasyDebug.Serializer;
 
 namespace EasyDebug
 {
@@ -75,6 +73,7 @@ namespace EasyDebug
             ThemeManager.SetTheme(EditorPrefs.GetInt("themeIndex"));
             StaticClassSelector.Init();
             Load();
+            Debug.Log("Init");
         }
 
         private void Load()

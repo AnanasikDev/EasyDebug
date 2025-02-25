@@ -10,17 +10,19 @@ public static class StaticClassSelector
 
     public static void Init()
     {
-        if (staticClassNames != null) return;
-
         staticClassNames = new List<string>();
         staticClassLookup = new Dictionary<string, Type>();
 
-        foreach (var type in Assembly.GetExecutingAssembly().GetTypes())
+        foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
         {
-            if (type.IsClass && type.IsAbstract && type.IsSealed)
+            foreach (var type in assembly.GetTypes())
             {
-                staticClassNames.Add(type.FullName);
-                staticClassLookup[type.FullName] = type;
+                if (type.IsClass && type.IsAbstract && type.IsSealed)
+                {
+                    //UnityEngine.Debug.Log(type.FullName);
+                    staticClassNames.Add(type.FullName);
+                    staticClassLookup[type.FullName] = type;
+                }
             }
         }
     }

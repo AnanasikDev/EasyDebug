@@ -17,6 +17,11 @@ namespace EasyDebug
             return cap + str + (mirror ? string.Join("", cap.Reverse()) : cap);
         }
 
+        public static string Encapsulate(this string str, string leftCap, string rightCap, string filler = "")
+        {
+            return leftCap + filler + str + filler + rightCap;
+        }
+
         public static string Repeat(this string str, int n)
         {
             StringBuilder sb = new StringBuilder();
