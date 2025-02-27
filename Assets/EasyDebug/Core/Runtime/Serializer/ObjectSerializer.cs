@@ -178,7 +178,7 @@ namespace EasyDebug.Serializer
 
             if (serializable_forceNewLine)
             {
-                return type.Name + "\n" + tab1 + "{\n" + SerializerHelper.SerializeComponent(obj, access, this, depthi, separator, (string unit) => tab + unit) + tab1 + "}";
+                return type.Name + "\n" + tab1 + "{\n" + SerializerHelper.SerializeComponent(obj, access, this, depthi, separator, (string unit) => tab + unit) + "\n" + tab1 + "}";
             }
             else
             {

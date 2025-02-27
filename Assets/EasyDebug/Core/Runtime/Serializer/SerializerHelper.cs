@@ -53,6 +53,7 @@ namespace EasyDebug.Serializer
             foreach (var prop in props)
             {
                 i++;
+                if (prop.GetCustomAttribute<ObsoleteAttribute>() != null) continue;
 
                 string typeName = serializer.FormatTypeName(prop.PropertyType);
                 string name = prop.Name;
