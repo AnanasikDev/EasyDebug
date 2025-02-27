@@ -1,3 +1,4 @@
+using EasyDebug.Serializer;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
@@ -15,6 +16,7 @@ public static class StaticClassSelector
 
         foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
         {
+            if (!ObjectSerializer.instance.IsAssemblyUserDefined(assembly.GetName().Name)) continue;
             foreach (var type in assembly.GetTypes())
             {
                 if (type.IsClass && type.IsAbstract && type.IsSealed)

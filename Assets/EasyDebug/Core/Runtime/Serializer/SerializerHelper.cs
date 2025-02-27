@@ -11,6 +11,7 @@ namespace EasyDebug.Serializer
         {
             StringBuilder sb = new StringBuilder();
             Type type = component.GetType();
+            if (component is Type t) type = t; // for static classes component is a static class, i.e. type
 
             if (serializer.showFields)
                 SerializeFields(sb, type, component, access, serializer, depthi, separator, formatUnit);

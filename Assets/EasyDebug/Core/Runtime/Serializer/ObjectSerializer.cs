@@ -68,7 +68,7 @@ namespace EasyDebug.Serializer
         };
 
         public List<AssemblyDefinitionAsset> includedAssemblyDefinitions = new List<AssemblyDefinitionAsset>();
-        private HashSet<string> includedAssemblyNames = new HashSet<string>();
+        public HashSet<string> includedAssemblyNames = new HashSet<string>();
 
         public ObjectSerializer()
         {
@@ -102,9 +102,13 @@ namespace EasyDebug.Serializer
             }
         }
 
-        private bool IsUserDefined(Type type)
+        public bool IsTypeUserDefined(Type type)
         {
-            return includedAssemblyNames.Contains(type.Assembly.GetName().Name);
+            return IsAssemblyUserDefined(type.Assembly.GetName().Name);
+        }
+        public bool IsAssemblyUserDefined(string name)
+        {
+            return includedAssemblyNames.Contains(name);
         }
 
 
@@ -118,7 +122,7 @@ namespace EasyDebug.Serializer
 
             foreach (var script in obj.GetComponents(type))
             {
-                if (!allAssemblies && !IsUserDefined(script.GetType())) continue;
+                if (!allAssemblies && !IsTypeUserDefined(script.GetType())) continue;
 
                 sb.AppendLine(SerializerHelper.FormatHeader(this, type.Name, dynamicWidth));
                 sb.AppendLine(SerializerHelper.SerializeComponent(script, access, this));
@@ -130,9 +134,12 @@ namespace EasyDebug.Serializer
         public string SerializeStaticType()
         {
             if (staticType == null) return "No type selected.";
-            if (!allAssemblies && !IsUserDefined(staticType)) return "-";
+            if (!allAssemblies && !IsTypeUserDefined(staticType)) return "-";
 
-            return SerializerHelper.SerializeComponent(staticType, BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic, this);
+            StringBuilder sb = new StringBuilder();
+            sb.AppendLine(SerializerHelper.FormatHeader(this, staticType.Name, dynamicWidth));
+            sb.AppendLine(SerializerHelper.SerializeComponent(staticType, BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic, this));
+            return sb.ToString();
         }
 
         public string SerializeInnerObject(object obj, int depthi = 0)
@@ -274,7 +281,7 @@ namespace EasyDebug.Serializer
                     }
                     if (i == length)
                     {
-                        sb.Append($"{FormatValue(entry.Key, depthi)}: {FormatValue(entry.Value, depthi)}");
+                        sb.Append($"{FormatValue(entry.Key, depthi)}".Colorify(ThemeManager.currentTheme.dictKeyColor) + ":".Colorify(ThemeManager.currentTheme.prefixColor) + $"{FormatValue(entry.Value, depthi)}".Colorify(ThemeManager.currentTheme.valueColor));
                     }
                     else
                     {

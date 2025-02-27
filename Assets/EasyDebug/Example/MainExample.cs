@@ -173,6 +173,8 @@ public class B
 
 public static class Hehe
 {
-    static B b = new B();
+    public static B b = new B();
+    public static string heh = "1231LSKFAHJF;LAKDSJFHA;SJKDHFASKJDHFKLJHS";
     private static A a { get; set; } = new A(1, "e", 2);
+    private static double pi = 3.09123019;
 }
