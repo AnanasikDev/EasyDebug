@@ -18,7 +18,7 @@ namespace EasyDebug.CommandLine
     /// <summary>
     /// A marker for all functions that can be accessed via Command Line
     /// </summary>
-    [AttributeUsage(AttributeTargets.Method)]
+    [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
     public class Command : Attribute
     {
         public string functionName { get; private set; }

@@ -1,5 +1,4 @@
-﻿using EasyDebug;
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -24,6 +23,10 @@ namespace EasyDebug.Serializer
         public bool showStatic = false;
         public bool showProperties = true;
         public bool showFields = true;
+        /// <summary>
+        /// If false only members declared by the user are shown.
+        /// </summary>
+        public bool declaredOnly = true;
 
         public bool unfoldSerializable = true;
         public bool serializable_forceNewLine = true;
@@ -79,7 +82,18 @@ namespace EasyDebug.Serializer
         public BindingFlags GetBindingFlags()
         {
             BindingFlags access = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance;
-            if (showStatic) access = access | BindingFlags.Static;
+
+            if (showStatic) access |= BindingFlags.Static;
+            if (declaredOnly) access |= BindingFlags.DeclaredOnly;
+
+            return access;
+        }
+
+        public BindingFlags GetStaticBindingFlags()
+        {
+            BindingFlags access = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static;
+
+            if (declaredOnly) access |= BindingFlags.DeclaredOnly;
 
             return access;
         }
@@ -124,7 +138,7 @@ namespace EasyDebug.Serializer
             {
                 if (!allAssemblies && !IsTypeUserDefined(script.GetType())) continue;
 
-                sb.AppendLine(SerializerHelper.FormatHeader(this, type.Name, dynamicWidth));
+                sb.AppendLine(SerializerHelper.FormatHeader(this, script.GetType().Name, dynamicWidth));
                 sb.AppendLine(SerializerHelper.SerializeComponent(script, access, this));
             }
 
@@ -138,7 +152,7 @@ namespace EasyDebug.Serializer
 
             StringBuilder sb = new StringBuilder();
             sb.AppendLine(SerializerHelper.FormatHeader(this, staticType.Name, dynamicWidth));
-            sb.AppendLine(SerializerHelper.SerializeComponent(staticType, BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic, this));
+            sb.AppendLine(SerializerHelper.SerializeComponent(staticType, GetStaticBindingFlags(), this));
             return sb.ToString();
         }
 
@@ -240,7 +254,7 @@ namespace EasyDebug.Serializer
                     i++;
                     if (i > collection_maxLimit)
                     {
-                        sb.Append($"... ({collection_maxLimit} shown, {length - collection_maxLimit} ...");
+                        sb.Append($"... {collection_maxLimit} shown, {length - collection_maxLimit} left ...");
                         break;
                     }
                     if (i == length)
@@ -276,12 +290,12 @@ namespace EasyDebug.Serializer
                     i++;
                     if (i > collection_maxLimit)
                     {
-                        sb.Append($"... ({collection_maxLimit} shown, {length - collection_maxLimit} ...");
+                        sb.Append($"... {collection_maxLimit} shown, {length - collection_maxLimit} left ...");
                         break;
                     }
                     if (i == length)
                     {
-                        sb.Append($"{FormatValue(entry.Key, depthi)}".Colorify(ThemeManager.currentTheme.dictKeyColor) + ":".Colorify(ThemeManager.currentTheme.prefixColor) + $"{FormatValue(entry.Value, depthi)}".Colorify(ThemeManager.currentTheme.valueColor));
+                        sb.Append($"{FormatValue(entry.Key, depthi)}" + ":" + $"{FormatValue(entry.Value, depthi)}");
                     }
                     else
                     {

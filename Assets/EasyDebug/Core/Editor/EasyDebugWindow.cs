@@ -73,7 +73,6 @@ namespace EasyDebug
             ThemeManager.SetTheme(EditorPrefs.GetInt("themeIndex"));
             StaticClassSelector.Init();
             Load();
-            Debug.Log("Init");
         }
 
         private void Load()
@@ -86,6 +85,7 @@ namespace EasyDebug
             serializer.showStatic = EditorPrefs.GetBool("serializer_showStatic");
             serializer.showFields = EditorPrefs.GetBool("serializer_showFields");
             serializer.showProperties = EditorPrefs.GetBool("serializer_showProperties");
+            serializer.declaredOnly = EditorPrefs.GetBool("serializer_declaredOnly");
 
             serializer.unfoldCollections = EditorPrefs.GetBool("serializer_unfoldCollections");
             serializer.collection_forceNewLine = EditorPrefs.GetBool("serializer_collection_forceNewLine");
@@ -103,6 +103,7 @@ namespace EasyDebug
             EditorPrefs.SetBool("serializer_showStatic", serializer.showStatic);
             EditorPrefs.SetBool("serializer_showFields", serializer.showFields);
             EditorPrefs.SetBool("serializer_showProperties", serializer.showProperties);
+            EditorPrefs.SetBool("serializer_declaredOnly", serializer.declaredOnly);
             EditorPrefs.SetBool("serializer_unfoldCollections", serializer.unfoldCollections);
             EditorPrefs.SetBool("serializer_collection_forceNewLine", serializer.collection_forceNewLine);
             EditorPrefs.SetBool("serializer_unfoldSerializable", serializer.unfoldSerializable);
@@ -141,7 +142,10 @@ namespace EasyDebug
 
             alwaysUpdate = GUILayout.Toggle(alwaysUpdate, "Always update");
 
-            EditorGUILayout.LabelField("Select Theme");
+            if (GUILayout.Button("Safe init"))
+            {
+                SafeInit();
+            }
 
             // Dropdown to select theme
             string[] themeNames = ThemeManager.themes.ConvertAll(t => t.Name).ToArray();
@@ -302,6 +306,7 @@ namespace EasyDebug
             serializer.showStatic = GUILayout.Toggle(serializer.showStatic, "Show static", GUILayout.MaxWidth(optionWidth));
             serializer.showFields = GUILayout.Toggle(serializer.showFields, "Show fields", GUILayout.MaxWidth(optionWidth));
             serializer.showProperties = GUILayout.Toggle(serializer.showProperties, "Show properties", GUILayout.MaxWidth(optionWidth));
+            serializer.declaredOnly = GUILayout.Toggle(serializer.declaredOnly, "Hide internal", GUILayout.MaxWidth(optionWidth));
             EditorGUILayout.EndHorizontal();
 
             EditorGUILayout.BeginHorizontal();

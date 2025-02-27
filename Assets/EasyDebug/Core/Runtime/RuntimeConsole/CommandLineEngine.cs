@@ -42,7 +42,7 @@ namespace EasyDebug.CommandLine
                     }
                     catch (Exception e)
                     {
-                        PipeConsole.Print(m.GetCustomAttribute<Command>().functionName, " is doubled! skipping");
+                        Debug.LogError(e.ToString() + "\n" + m.GetCustomAttribute<Command>().functionName + " is doubled! skipping");
                     }
                 }
             }

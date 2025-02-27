@@ -71,8 +71,7 @@ new Theme("Default",
     valueColor: new Color(0.9f, 0.7f, 0.3f),
     nameColor: new Color(0.9f, 0.9f, 0.91f),
     prefixColor: new Color(0.95f, 0.95f, 1.0f),
-    scriptColor: new Color(1.0f, 0.4f, 0.1f),
-    dictKeyColor: new Color(1.0f, 0.9f, 0.8f)),
+    scriptColor: new Color(1.0f, 0.4f, 0.1f)),
 
 new Theme("Neon Eclipse",
     fieldTypeColor: new Color(0.0f, 0.9f, 1.0f),
@@ -80,8 +79,7 @@ new Theme("Neon Eclipse",
     valueColor: new Color(1.0f, 1.0f, 0.0f),
     nameColor: new Color(0.6f, 1.0f, 0.0f),
     prefixColor: new Color(0.81f, 0.04f, 1.0f),
-    scriptColor: new Color(1.0f, 0.2f, 0.4f),
-    dictKeyColor: new Color(1.0f, 0.9f, 0.9f)),
+    scriptColor: new Color(1.0f, 0.2f, 0.4f)),
 
 new Theme("Cyber Matrix",
     fieldTypeColor: new Color(0.2f, 1.0f, 0.8f),
@@ -89,8 +87,7 @@ new Theme("Cyber Matrix",
     valueColor: new Color(0.7f, 1.0f, 0.85f),
     nameColor: new Color(0.85f, 1.0f, 0.6f),
     prefixColor: new Color(0.7f, 0.87f, 0.15f),
-    scriptColor: new Color(0.9f, 0.3f, 0.3f),
-    dictKeyColor: new Color(0.5f, 0.9f, 1.0f)),
+    scriptColor: new Color(0.9f, 0.3f, 0.3f)),
 
 new Theme("Crimson Forge",
     fieldTypeColor: new Color(1.0f, 0.2f, 0.2f),
@@ -98,8 +95,7 @@ new Theme("Crimson Forge",
     valueColor: new Color(1.0f, 0.7f, 0.3f),
     nameColor: new Color(1.0f, 0.85f, 0.85f),
     prefixColor: new Color(1.0f, 0.5f, 0.3f),
-    scriptColor: new Color(1.0f, 0.4f, 0.2f),
-    dictKeyColor: new Color(1.0f, 0.4f, 1.0f))
+    scriptColor: new Color(1.0f, 0.4f, 0.2f))
             };
         }
     }

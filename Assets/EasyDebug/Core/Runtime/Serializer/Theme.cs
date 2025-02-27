@@ -10,9 +10,8 @@ public class Theme
     public Color nameColor;
     public Color prefixColor;
     public Color scriptColor;
-    public Color dictKeyColor;
 
-    public Theme(string name, Color fieldTypeColor, Color propertyTypeColor, Color valueColor, Color nameColor, Color prefixColor, Color scriptColor, Color dictKeyColor)
+    public Theme(string name, Color fieldTypeColor, Color propertyTypeColor, Color valueColor, Color nameColor, Color prefixColor, Color scriptColor)
     {
         Name = name;
         this.fieldTypeColor = fieldTypeColor;
@@ -21,6 +20,5 @@ public class Theme
         this.nameColor = nameColor;
         this.prefixColor = prefixColor;
         this.scriptColor = scriptColor;
-        this.dictKeyColor = dictKeyColor;
     }
 }
