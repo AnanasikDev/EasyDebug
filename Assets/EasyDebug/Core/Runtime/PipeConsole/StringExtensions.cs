@@ -8,6 +8,8 @@ namespace EasyDebug
     {
         public static string Colorify(this string str, UnityEngine.Color color)
         {
+            if (str.Trim() == string.Empty) return str;
+
             string hex = ColorUtility.ToHtmlStringRGB(color);
             return $"<color=#{hex}>{str}</color>";
         }

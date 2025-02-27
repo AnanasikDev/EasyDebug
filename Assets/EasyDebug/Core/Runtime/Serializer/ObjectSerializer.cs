@@ -178,7 +178,7 @@ namespace EasyDebug.Serializer
 
             if (serializable_forceNewLine)
             {
-                return type.Name + "\n" + tab1 + "{\n" + SerializerHelper.SerializeComponent(obj, access, this, depthi, separator, (string unit) => tab + unit) + "\n" + tab1 + "}";
+                return type.Name + "\n" + tab1 + "{\n" + SerializerHelper.SerializeComponent(obj, access, this, depthi, separator, (string unit) => tab + unit) + tab1 + "}";
             }
             else
             {
@@ -225,7 +225,18 @@ namespace EasyDebug.Serializer
                 return SerializeInnerObject(value, depthi);
             }
 
-            return value.ToString();
+            return value switch
+            {
+                bool b => b ? "true" : "false",
+                float f => f.ToString("F3"),
+                double d => d.ToString("F3"),
+                Vector3 v => $"({v.x:F2}, {v.y:F2}, {v.z:F2})",
+                Vector2 v => $"({v.x:F2}, {v.y:F2})",
+                Vector4 v => $"({v.x:F2}, {v.y:F2}, {v.z:F2}, {v.w:F2})",
+                Quaternion q => $"({q.x:F2}, {q.y:F2}, {q.z:F2}, {q.w:F2})",
+                Color c => "■".Colorify(c) + $"RGBA({c.r:F2}, {c.g:F2}, {c.b:F2}, {c.a:F2})",
+                _ => value.ToString()
+            };
         }
 
         // Helper function to format collections (arrays/lists)
@@ -295,11 +306,11 @@ namespace EasyDebug.Serializer
                     }
                     if (i == length)
                     {
-                        sb.Append($"{FormatValue(entry.Key, depthi)}" + ":" + $"{FormatValue(entry.Value, depthi)}");
+                        sb.Append($"{FormatValue(entry.Key, depthi)}".Colorify(ThemeManager.currentTheme.dictKeyColor) + ": " + $"{FormatValue(entry.Value, depthi)}");
                     }
                     else
                     {
-                        sb.Append($"{FormatValue(entry.Key, depthi)}: {FormatValue(entry.Value, depthi)}, " + (collection_forceNewLine ? "\n" : ""));
+                        sb.Append($"{FormatValue(entry.Key, depthi)}".Colorify(ThemeManager.currentTheme.dictKeyColor) + ": " + $"{FormatValue(entry.Value, depthi)}, " + (collection_forceNewLine ? "\n" : ""));
                     }
                 }
                 sb.AppendLine((collection_forceNewLine ? "\n" : "") + "}");

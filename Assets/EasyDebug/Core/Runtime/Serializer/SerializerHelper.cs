@@ -14,10 +14,18 @@ namespace EasyDebug.Serializer
             if (component is Type t) type = t; // for static classes component is a static class, i.e. type
 
             if (serializer.showFields)
+            {
                 SerializeFields(sb, type, component, access, serializer, depthi, separator, formatUnit);
-            sb.AppendLine();
-            if (serializer.showProperties)
-                SerializeProperties(sb, type, component, access, serializer, depthi, separator, formatUnit);
+            }
+
+            if (type.GetProperties().Length > 0)
+            {
+                sb.Append(separator);
+                if (serializer.showProperties)
+                {
+                    SerializeProperties(sb, type, component, access, serializer, depthi, separator, formatUnit);
+                }
+            }
 
             return sb.ToString();
         }
@@ -45,7 +53,6 @@ namespace EasyDebug.Serializer
             foreach (var prop in props)
             {
                 i++;
-                if (prop.GetCustomAttribute<ObsoleteAttribute>() != null) continue;
 
                 string typeName = serializer.FormatTypeName(prop.PropertyType);
                 string name = prop.Name;
